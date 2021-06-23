@@ -4,7 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm -r --filter ./packages --parallel run dev",
+    "build": "pnpm -r --filter ./packages run build",
+    "client:dev": "pnpm -C ./packages/client run dev",
+    "client:build": "pnpm -C ./packages/client run build",
+    "client:serve": "pnpm -C ./packages/client run serve",
+    "server:dev": "pnpm -C ./packages/server run dev",
+    "server:build": "pnpm -C ./packages/client run build",
+    "server:serve": "pnpm -C ./packages/server run serve"
   },
   "repository": {
     "type": "git",
@@ -19,6 +26,7 @@
   "homepage": "https://github.com/wheatjs/vueuse-playground-next#readme",
   "devDependencies": {
     "@antfu/eslint-config": "^0.6.6",
-    "eslint": "^7.29.0"
+    "eslint": "^7.29.0",
+    "pnpm": "^6.9.0"
   }
 }
