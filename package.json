@@ -1,0 +1,24 @@
+{
+  "name": "vueuse-playground-next",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wheatjs/vueuse-playground-next.git"
+  },
+  "keywords": [],
+  "author": "Jacob Clevenger <jacobrclevenger@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wheatjs/vueuse-playground-next/issues"
+  },
+  "homepage": "https://github.com/wheatjs/vueuse-playground-next#readme",
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.6.6",
+    "eslint": "^7.29.0"
+  }
+}
