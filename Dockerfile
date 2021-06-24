@@ -20,4 +20,4 @@ RUN pnpm install
 COPY . .
 
 EXPOSE 4000
-CMD [ "pnpm", "run server:serve" ]
+CMD [ "npm", "run server:serve" ]
