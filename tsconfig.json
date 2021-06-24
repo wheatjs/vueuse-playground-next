@@ -1,1 +1,33 @@
-{}
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "baseUrl": ".",
+    "target": "es2016",
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@playground/shared": [
+        "./packages/shared/src/index.ts"
+      ],
+    },
+  },
+  "include": [
+    "./*.ts",
+    "./packages/**/*.ts",
+    "./packages/**/*.vue",
+  ],
+  "exclude": [
+    "**/dist/**",
+    "node_modules"
+  ]
+}

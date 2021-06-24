@@ -1,0 +1,97 @@
+html,
+body,
+#app {
+  @apply h-full p-0 m-0;
+}
+
+html.dark {
+  @apply bg-dark-900 text-light-500;
+}
+
+::selection {
+  @apply bg-green-500 bg-opacity-20 text-green-300;
+}
+
+::-webkit-scrollbar {
+  @apply bg-light-300;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-light-800;
+}
+
+.dark ::-webkit-scrollbar {
+  @apply bg-dark-900;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-dark-800;
+}
+
+/* Editor Styles */
+.editor-windicss-color-block {
+  width: 0.8em;
+  height: 0.8em;
+  content: '';
+  display: inline-block;
+  margin: 0.1em 0.2em 0;
+  border-radius: 0.125em;
+}
+
+.editor-windicss-color-block-light {
+  border: 1px solid #000000;
+}
+
+.editor-windicss-color-block-dark {
+  border: 1px solid #eeeeee;
+}
+
+.editor-packages-install {
+  width: 0.8em;
+  height: 0.8em;
+  content: '';
+  display: inline-block;
+  margin: 0.1em 0.2em 0;
+  border-radius: 0.125em;
+  cursor: pointer;
+  color: white;
+  background: url('~/assets/CarbonPackage.svg') no-repeat center center;
+  background-size: 1em;
+}
+
+.dark .mtk1 {
+  color: white !important;
+}
+
+.monaco-remote-cursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 4000;
+  width: 2px;
+}
+
+.monaco-remote-cursor:before {
+  content: "";
+  width: 6px;
+  height: 5px;
+  display: block;
+  margin-left: -2px;
+  margin-top: 0;
+  z-index: 4000;
+  background: inherit;
+}
+
+.monaco-remote-cursor-tooltip {
+  position: absolute;
+  white-space: nowrap;
+  z-index: 4000;
+  transition: opacity 0.5s ease-out;
+  @apply rounded-sm px-2 py-1 text-xs shadow font-sans opacity-1 text-white;
+}
+
+.monaco-remote-selection {
+  position: absolute;
+  pointer-events: auto;
+  opacity: 0.3;
+  background: blue;
+}

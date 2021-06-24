@@ -12,9 +12,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@playground/shared": "workspace:*",
     "esno": "^0.7.3",
     "fastify": "^3.18.0",
-    "fastify-websocket": "^3.2.0"
+    "fastify-websocket": "^3.2.0",
+    "nanoid": "^3.1.23",
+    "socket.io": "^4.1.2"
   },
   "devDependencies": {
     "@types/node": "^15.12.4"

@@ -1,26 +1,58 @@
-import Fastify, { FastifyInstance } from 'fastify'
-import FastifyWebsocket from 'fastify-websocket'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import { nanoid } from 'nanoid'
 
-async function start() {
-  const server = Fastify({})
+const server = createServer()
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+})
 
-  /**
-   * Register Plugins
-   */
-  server.register(FastifyWebsocket)
+const reserved = [
+  'connect',
+  'connect_error',
+  'disconnect',
+  'disconnecting',
+  'newListener',
+  'removeListener',
+]
 
-  server.get('/', { websocket: true }, (connection, request) => {
-    connection.socket.on('message', message => {
-      connection.socket.send('Hi From Server')
+io.on('connection', async(socket) => {
+  let username: any
+  let session: any
+  ({ username, session } = socket.handshake.query) // eslint-disable-line prefer-const
+
+  if (session) {
+    socket.join(session)
+    const users = (await io.in(session).fetchSockets())
+      .map(room => room.handshake.query.username)
+    io.to(session).emit('users', users)
+  }
+  else {
+    session = nanoid(8)
+    socket.join(session)
+    socket.emit('room-connect', session)
+  }
+
+  socket.onAny((eventName, data) => {
+    if (reserved.includes(eventName))
+      return
+
+    socket.broadcast.to(session).emit(eventName, {
+      id: socket.id,
+      username,
+      ...data,
     })
   })
 
-  server.listen(4000, (err) => {
-    if (err) {
-      server.log.error(err)
-      process.exit(1)
-    }
-  })
-}
+  socket.on('disconnected', async() => {
+    const users = (await io.in(session).fetchSockets())
+      .map(room => room.handshake.query.username)
 
-start()
+    io.to(session).emit('users', users)
+  })
+})
+
+server.listen(4000)

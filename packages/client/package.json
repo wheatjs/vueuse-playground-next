@@ -1,12 +1,64 @@
 {
-  "name": "client",
+  "name": "@playground/client",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "serve": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "buildOptions": {
+    "formats": [
+      "global"
+    ],
+    "env": "development",
+    "enableNonBrowserBranches": true
+  },
+  "dependencies": {
+    "@antfu/utils": "^0.2.1",
+    "@convergencelabs/monaco-collab-ext": "^0.3.2",
+    "@headlessui/vue": "^1.2.0",
+    "@vue/runtime-core": "^3.1.1",
+    "@vue/runtime-dom": "^3.1.1",
+    "@vue/shared": "^3.1.1",
+    "@vueuse/components": "^5.0.3",
+    "@vueuse/core": "^5.0.3",
+    "@vueuse/integrations": "^5.0.3",
+    "@vueuse/motion": "^1.5.6",
+    "acorn-loose": "^8.1.0",
+    "emmet-monaco-es": "^4.6.2",
+    "firebase": "^9.0.0-beta.5",
+    "monaco-editor": "^0.25.1",
+    "monaco-editor-core": "^0.25.0",
+    "muuri": "^0.9.4",
+    "nanoid": "^3.1.23",
+    "pinia": "^2.0.0-beta.2",
+    "socket.io-client": "^4.1.2",
+    "splitpanes": "^3.0.4",
+    "theme-vitesse": "^0.1.12",
+    "v-tooltip": "^4.0.0-alpha.1",
+    "vscode-html-languageservice": "^4.0.5",
+    "vue": "^3.1.1",
+    "vue-hako": "^0.0.1",
+    "vue-router": "^4.0.8",
+    "vuedraggable": "^4.0.3"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.6.6",
+    "@iconify/json": "^1.1.356",
+    "@types/node": "^15.12.2",
+    "@types/splitpanes": "^2.2.0",
+    "@vitejs/plugin-vue": "^1.2.3",
+    "@vue/compiler-sfc": "^3.1.1",
+    "eslint": "^7.28.0",
+    "typescript": "^4.3.2",
+    "vite": "^2.3.7",
+    "vite-plugin-components": "^0.11.1",
+    "vite-plugin-icons": "^0.6.2",
+    "vite-plugin-pages": "^0.13.1",
+    "vite-plugin-windicss": "^1.0.4",
+    "vue-tsc": "^0.0.24",
+    "windicss": "^3.1.3"
+  }
 }
