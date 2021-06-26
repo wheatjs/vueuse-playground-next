@@ -2,8 +2,20 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid } from 'nanoid'
 import { Collaborator, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent } from '@playground/shared'
+import express from 'express';
+import { json } from 'body-parser';
+import { Router } from 'express';
+import dbRoutes from './routes';
 
-const server = createServer()
+const routes = Router();
+routes.use('/playgrounds', dbRoutes);
+
+const app = express();
+app.use(json())
+app.use(routes);
+
+const server = createServer(app)
+
 const io = new Server(server, {
   cors: {
     origin: '*',
