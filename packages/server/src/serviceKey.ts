@@ -7,5 +7,6 @@ export const ServiceKey = {
     auth_uri: process.env.SKEY_AUTH_URI,
     token_uri: process.env.SKEY_TOKEN_URI,
     auth_provider_x509_cert_url: process.env.SKEY_AUTH_PROVIDER,
-    client_x509_cert_url: process.env.SKEY_CERT_URL
+    client_x509_cert_url: process.env.SKEY_CERT_URL,
+    client_email: process.env.SKEY_CLIENT_EMAIL
 }
