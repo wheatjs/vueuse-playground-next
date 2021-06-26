@@ -1,6 +1,7 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid } from 'nanoid'
+import { SocketEvent } from '@playground/shared'
 
 const server = createServer()
 const io = new Server(server, {
@@ -26,14 +27,16 @@ io.on('connection', async(socket) => {
 
   if (session) {
     socket.join(session)
+    socket.emit(SocketEvent.RoomJoined)
     const users = (await io.in(session).fetchSockets())
       .map(room => room.handshake.query.username)
-    io.to(session).emit('users', users)
+    io.to(session).emit(SocketEvent.SyncCollaborators, users)
   }
   else {
     session = nanoid(8)
+    console.log(session)
     socket.join(session)
-    socket.emit('room-connect', session)
+    socket.emit(SocketEvent.RoomCreated, { session })
   }
 
   socket.onAny((eventName, data) => {
@@ -51,7 +54,7 @@ io.on('connection', async(socket) => {
     const users = (await io.in(session).fetchSockets())
       .map(room => room.handshake.query.username)
 
-    io.to(session).emit('users', users)
+    io.to(session).emit(SocketEvent.SyncCollaborators, users)
   })
 })
 

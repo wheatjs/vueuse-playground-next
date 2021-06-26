@@ -16,6 +16,7 @@
     "enableNonBrowserBranches": true
   },
   "dependencies": {
+    "@playground/shared": "workspace:*",
     "@antfu/utils": "^0.2.1",
     "@convergencelabs/monaco-collab-ext": "^0.3.2",
     "@headlessui/vue": "^1.2.0",

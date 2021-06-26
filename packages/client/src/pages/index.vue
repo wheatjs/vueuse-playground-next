@@ -35,6 +35,7 @@ shouldUpdate(() => {
                 <Editor
                   language="javascript"
                   :value="script"
+                  type="script"
                   @change="(content) => playground.currentFile.script = content"
                 />
               </Container>
@@ -50,6 +51,7 @@ shouldUpdate(() => {
                 <Editor
                   language="html"
                   :value="template"
+                  type="template"
                   @change="(content) => playground.currentFile.template = content"
                 />
               </Container>

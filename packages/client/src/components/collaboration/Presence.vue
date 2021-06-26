@@ -5,7 +5,7 @@ const collaboration = useCollaboration()
 </script>
 
 <template>
-  <div
+  <!-- <div
     v-for="collaborator in collaboration.others"
     :key="collaborator.id"
     v-motion
@@ -27,5 +27,5 @@ const collaboration = useCollaboration()
     place="items-center content-center"
   >
     {{ collaborator.name[0] }}
-  </div>
+  </div> -->
 </template>

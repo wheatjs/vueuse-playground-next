@@ -1,54 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { io } from 'socket.io-client'
 import { useCollaboration } from '~/store'
-// import { CollaborationManager } from '~/services/collaboration'
+import { CollaborationManager } from '~/services/collaboration'
 
 const route = useRoute()
-// const manager = new CollaborationManager()
+const manager = new CollaborationManager()
 const collaboration = useCollaboration()
 
-// manager.open()
-
-// watch(() => [route.query, collaboration.isOpen], () => {
-//   if (route.query.c && collaboration.isOpen)
-//     manager.connect(route.query.c as string)
-// })
-
-const id = ref('')
-
-const join = () => {
-  let socket
-
-  if (id.value.length > 0) {
-    socket = io('http://localhost:4000', {
-      query: {
-        username: 'wheat',
-        session: id.value,
-      },
-    })
+const stop = watch(() => [route.query], () => {
+  if (route.query.room && !collaboration.isConnected) {
+    stop()
+    setTimeout(() => {
+      manager.connect(route.query.room.toString())
+    }, 500)
   }
-  else {
-    socket = io('http://localhost:4000', {
-      query: {
-        username: 'wheat',
-      },
-    })
-  }
+})
 
-  socket.connect()
+const connect = () => {
+  if (collaboration.isConnected)
+    return
 
-  socket.on('room-connect', (session) => {
-    console.log(session)
-    // alert(session)
-  })
-
-  socket.on('users', (users) => {
-    console.log(users)
-  })
+  manager.connect()
 }
-
 </script>
 
 <template>
@@ -63,8 +37,7 @@ const join = () => {
       </template>
     </DialogTitle>
     <div p="4">
-      <Textfield v-model="id" />
-      <Textfield v-model="collaboration.shareLink" select="all" auto-select read-only>
+      <Textfield v-if="collaboration.isConnected" v-model="collaboration.shareLink" select="all" auto-select read-only>
         <template #icon>
           <carbon-link />
         </template>
@@ -72,10 +45,13 @@ const join = () => {
           <carbon-renew />
         </Button>
       </Textfield>
+      <p>
+        Create a new session to connect to up to 4 other users.
+      </p>
     </div>
     <DialogFooter>
-      <Button @click="join()">
-        Join
+      <Button @click="connect()">
+        Create Session
       </Button>
     </DialogFooter>
   </Dialog>

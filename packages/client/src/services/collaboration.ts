@@ -1,192 +1,228 @@
-/**
- * I wrote all this and still have no idea what is going on
- */
-
-import Peer from '@wheatjs/peerjs'
-import { useCollaboration, usePackages, exportFiles, importFiles } from '~/store'
-import { MonacoCollaborationManager } from '~/monaco/collaboration'
+import { io, Socket } from 'socket.io-client'
+import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent } from '@playground/shared'
+import { editor as Editor } from 'monaco-editor'
+import { useCollaboration, playground } from '~/store'
 import { editors } from '~/store/editors'
-import names from '~/data/names.json'
+import { MonacoCollaborationManager } from '~/monaco/collaboration'
 
-interface PeerMessage {
-  id?: string
-  type: string
-  payload: {
-    [key: string]: any
-  }
-}
+type EmitParameter<T> = Omit<T, 'sender' | 'timestamp'>
 
-interface PeerConnection {
-  id: string
-  connection: Peer.DataConnection
-}
-
-interface PeerEditor {
-  type: string
+export interface FileEditor {
+  editor: Editor.IStandaloneCodeEditor
+  type: SFCType
   manager: MonacoCollaborationManager
 }
 
 export class CollaborationManager {
-  private collaborators = useCollaboration()
-  private packages = usePackages()
-  private peer: Peer
-  private connections: PeerConnection[] = []
-  private name = names[Math.floor(Math.random() * names.length)]
-  private editors: PeerEditor[] = []
+  private client: Socket
+  private username: string
+  private collaboration = useCollaboration()
+  private fileEditors: FileEditor[] = []
 
   constructor() {
-    this.peer = new Peer(this.collaborators.id, { debug: 2 })
-
-    this.peer.on('open', () => this.collaborators.isOpen = true)
-    this.peer.on('close', () => this.collaborators.isOpen = false)
-
-    this.broadcast = this.broadcast.bind(this)
+    this.username = this.collaboration.username
+    this.client = io('')
   }
 
-  public open() {
-    this.peer.on('connection', (connection) => {
-      connection.on('open', () => {
-        const { files, activeFilename } = exportFiles()
-        connection.send({
-          type: 'metadata-sync',
-          payload: {
-            packages: this.packages.packages,
-            files,
-            activeFilename,
-          },
-        } as PeerMessage)
-
-        this.syncUsers()
-
-        // Hook up editors
-        editors.forEach(({ type, editor }) => {
-          this.editors.push({
-            type,
-            manager: new MonacoCollaborationManager(editor as any, this.broadcast, type),
-          })
-        })
-      })
-
-      connection.on('data', (data: PeerMessage) => {
-        this.onMessage(data)
-      })
-
-      this.connections = [
-        ...this.connections,
-        {
-          id: connection.metadata.id,
-          connection,
-        },
-      ]
-
-      this.collaborators.addCollaborator({
-        id: connection.metadata.id,
-        name: connection.metadata.name,
-      })
-
-      connection.on('close', () => {
-        this.connections = this.connections.filter(({ id }) => id !== connection.metadata.id)
-        this.collaborators.removeCollaborator(connection.metadata.id)
-        this.syncUsers()
-      })
-    })
-  }
-
-  public connect(id: string) {
-    const connection = this.peer.connect(id, {
-      metadata: {
-        id: this.collaborators.id,
-        name: names[Math.floor(Math.random() * names.length)],
+  public connect(session?: string) {
+    this.client = io('ws://localhost:4000', {
+      // @ts-ignore
+      query: {
+        ...removeEmpty({
+          username: this.username,
+          session,
+        }),
       },
     })
 
-    connection.on('open', () => {
-      console.log('Successfully Connected to', id)
-
-      // Hook up editors
-      editors.forEach(({ type, editor }) => {
-        this.editors.push({
-          type,
-          manager: new MonacoCollaborationManager(editor as any, (message: PeerMessage) => this.broadcast(message, connection), type),
-        })
-      })
-    })
-
-    connection.on('data', (data: PeerMessage) => {
-      this.onMessage(data)
-    })
-
-    connection.on('close', () => {
-      this.collaborators.collaborators = []
-    })
-
-    window.onbeforeunload = () => connection.close()
-  }
-
-  public broadcast(message: PeerMessage, connection?: Peer.DataConnection) {
-    console.log(`Broadcasting Message from ${this.collaborators.id} to ${this.connections.map(({ id }) => id).join(', ')}`)
-
-    if (connection) {
-      connection.send({
-        id: this.collaborators.id,
-        ...message,
-      })
-    }
-    else {
-      this.connections.forEach((connection) => {
-        connection.connection.send({
-          id: this.collaborators.id,
-          ...message,
-        })
-      })
-    }
-  }
-
-  private onMessage(message: PeerMessage) {
-    console.log('Me', this.collaborators.id)
-    console.log(message)
-
-    if (message.type === 'metadata-sync') {
-      message.payload.packages.forEach(({ name }) => this.packages.addPackage(name))
-      importFiles({
-        activeFilename: message.payload.activeFilename,
-        files: message.payload.files,
-      })
-    }
-
-    if (message.type === 'users-sync')
-      this.collaborators.collaborators = message.payload.collaborators
-
-    if (message.type === 'editor') {
-      this.editors
-        .forEach(
-          x => x
-            .manager
-            .handleEditorEvent(
-              message.payload,
-              message.id!,
-              this.collaborators.collaborators.find(z => z.id === message.id)?.name,
-            ),
-        )
-    }
+    this.attachEditors()
+    this.attachEventListeners()
+    this.client.connect()
   }
 
   public disconnect() {
-
+    this.client.disconnect()
   }
 
-  private syncUsers() {
-    this.broadcast({
-      type: 'users-sync',
-      payload: {
-        collaborators: [
-          ...this.collaborators.collaborators,
+  private attachEditors() {
+    editors.forEach(({ editor, type }) => {
+      this.fileEditors.push({
+        editor,
+        type,
+        manager: new MonacoCollaborationManager(
+          editor,
+          type,
           {
-            id: this.collaborators.id,
-            name: this.name,
+            onCursor: offset => this.emitEditorCursorEvent({ filename: 'App.vue', offset, sfcType: type }),
+            onSelect: (startOffset, endOffset) => this.emitEditorSelectionEvent({
+              filename: 'App.vue',
+              offsetStart: startOffset,
+              offsetEnd: endOffset,
+              sfcType: type,
+            }),
+            onInsert: (index, text) => this.emitEditorInsertEvent({
+              filename: 'App.vue',
+              index,
+              text,
+              sfcType: type,
+            }),
+            onDelete: (index, length) => this.emitEditorDeleteEvent({
+              filename: 'App.vue',
+              index,
+              length,
+              sfcType: type,
+            }),
+            onReplace: (index, length, text) => this.emitEditorReplaceEvent({
+              filename: 'App.vue',
+              index,
+              length,
+              text,
+              sfcType: type,
+            }),
           },
-        ],
-      },
+        ),
+      })
     })
+  }
+
+  private attachEventListeners() {
+    this.client.on(SocketEvent.Connect, () => this.onConnect())
+    this.client.on(SocketEvent.Disconnect, () => this.onDisconnect())
+
+    this.client.on(SocketEvent.RoomCreated, (data: RoomCreatedEvent) => this.onRoomCreated(data))
+    this.client.on(SocketEvent.RoomJoined, (data: RoomJoinedEvent) => this.onRoomJoined(data))
+
+    this.client.on(SocketEvent.SyncCollaborators, (data: SyncCollaboratorsEvent) => this.onSyncCollaborators(data))
+    this.client.on(SocketEvent.SyncFilesRequest, (data: SyncFilesRequestEvent) => this.onSyncFilesRequest(data))
+    this.client.on(SocketEvent.SyncFilesResponse, (data: SyncFilesResponseEvent) => this.onSyncFilesResponse(data))
+
+    this.client.on(SocketEvent.PackageAdd, (data: PackageAddEvent) => this.onPackageAdd(data))
+    this.client.on(SocketEvent.PackageRemove, (data: PackageRemoveEvent) => this.onPackageRemove(data))
+
+    this.client.on(SocketEvent.EditorInsert, (data: EditorInsertEvent) => this.onEditorInsert(data))
+    this.client.on(SocketEvent.EditorDelete, (data: EditorDeleteEvent) => this.onEditorDelete(data))
+    this.client.on(SocketEvent.EditorReplace, (data: EditorReplaceEvent) => this.onEditorReplace(data))
+    this.client.on(SocketEvent.EditorCursor, (data: EditorCursorEvent) => this.onEditorCursor(data))
+    this.client.on(SocketEvent.EditorSelection, (data: EditorSelectionEvent) => this.onEditorSelection(data))
+  }
+
+  private emit<T>(name: SocketEvent, payload: Omit<T, 'sender' | 'timestamp'>) {
+    this.client.emit(name, {
+      sender: this.username,
+      timestamp: Date.now(),
+      ...payload,
+    } as BaseEvent)
+  }
+
+  private onConnect() {
+    this.collaboration.isConnected = true
+  }
+
+  private onDisconnect() {
+    this.collaboration.isConnected = false
+  }
+
+  private onRoomCreated({ session }: RoomCreatedEvent) {
+    this.collaboration.session = session
+  }
+
+  private onRoomJoined(data: RoomJoinedEvent) {
+    // TODO
+  }
+
+  private onSyncCollaborators({ collaborators }: SyncCollaboratorsEvent) {
+    this.collaboration.collaborators = collaborators
+  }
+
+  private onSyncFilesRequest(data: SyncFilesRequestEvent) {
+    // TODO
+  }
+
+  private onSyncFilesResponse(data: SyncFilesResponseEvent) {
+    // TODO
+  }
+
+  private onPackageAdd(data: PackageAddEvent) {
+    // TODO
+  }
+
+  private onPackageRemove(data: PackageRemoveEvent) {
+    // TODO
+  }
+
+  private onEditorInsert({ index, text, sfcType }: EditorInsertEvent) {
+    this.fileEditors
+      .filter(({ type }) => type === sfcType)
+      .forEach(({ manager }) => {
+        manager.insertContent(index, text)
+      })
+  }
+
+  private onEditorDelete({ index, length, sfcType }: EditorDeleteEvent) {
+    this.fileEditors
+      .filter(({ type }) => type === sfcType)
+      .forEach(({ manager }) => {
+        manager.deleteContent(index, length)
+      })
+  }
+
+  private onEditorReplace({ index, length, text, sfcType }: EditorReplaceEvent) {
+    this.fileEditors
+      .filter(({ type }) => type === sfcType)
+      .forEach(({ manager }) => {
+        manager.replaceContent(index, length, text)
+      })
+  }
+
+  private onEditorCursor({ offset, sender, sfcType }: EditorCursorEvent) {
+    this.fileEditors
+      .filter(({ type }) => type === sfcType)
+      .forEach(({ manager }) => {
+        manager.setCursorPosition(sender, sender, 'red', offset)
+      })
+  }
+
+  private onEditorSelection({ sender, offsetStart, offsetEnd, sfcType }: EditorSelectionEvent) {
+    this.fileEditors
+      .filter(({ type }) => type === sfcType)
+      .forEach(({ manager }) => {
+        manager.setSelection(sender, 'red', offsetStart, offsetEnd)
+      })
+  }
+
+  public emitSyncPackagesRequest(data: EmitParameter<SyncFilesRequestEvent>) {
+    this.emit(SocketEvent.SyncFilesRequest, data)
+  }
+
+  public emitSyncPackagesResponse(data: EmitParameter<SyncFilesResponseEvent>) {
+    this.emit(SocketEvent.SyncFilesResponse, data)
+  }
+
+  public emitPackageAddEvent(data: EmitParameter<PackageAddEvent>) {
+    this.emit(SocketEvent.PackageAdd, data)
+  }
+
+  public emitPackageRemoveEvent(data: EmitParameter<PackageRemoveEvent>) {
+    this.emit(SocketEvent.PackageRemove, data)
+  }
+
+  public emitEditorInsertEvent(data: EmitParameter<EditorInsertEvent>) {
+    this.emit(SocketEvent.EditorInsert, data)
+  }
+
+  public emitEditorDeleteEvent(data: EmitParameter<EditorDeleteEvent>) {
+    this.emit(SocketEvent.EditorDelete, data)
+  }
+
+  public emitEditorReplaceEvent(data: EmitParameter<EditorReplaceEvent>) {
+    this.emit(SocketEvent.EditorReplace, data)
+  }
+
+  public emitEditorCursorEvent(data: EmitParameter<EditorCursorEvent>) {
+    this.emit(SocketEvent.EditorCursor, data)
+  }
+
+  public emitEditorSelectionEvent(data: EmitParameter<EditorSelectionEvent>) {
+    this.emit(SocketEvent.EditorSelection, data)
   }
 }

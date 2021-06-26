@@ -1,48 +1,35 @@
 import { defineStore } from 'pinia'
-import { customAlphabet } from 'nanoid'
-import { editor as Editor } from 'monaco-editor'
-
-interface Collaborator {
-  id: string
-  name: string
-}
-
-interface CollaborationEditor {
-  type: string
-  editor: Editor.IStandaloneCodeEditor
-}
+import { Collaborator, randomUsername } from '@playground/shared'
 
 interface UseCollaborationState {
-  id: string
-  isHost: boolean
-  isOpen: boolean
+  id: string | null
+  username: string
+  session: string | null
   isConnected: boolean
   isDialogOpen: boolean
-  editors: CollaborationEditor[]
   collaborators: Collaborator[]
 }
 
 export const useCollaboration = defineStore({
   id: 'collaboration',
   state: () => ({
-    id: customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789', 8)(),
-    isHost: false,
-    isOpen: false,
+    id: null,
+    username: randomUsername(),
+    session: null,
     isConnected: false,
     isDialogOpen: false,
-    editors: [],
     collaborators: [],
   }) as UseCollaborationState,
   getters: {
     shareLink(state: UseCollaborationState) {
       const url = new URL(window.location.href)
-      url.searchParams.append('c', state.id)
+      url.searchParams.append('room', state.session || '')
       return url.toString()
     },
 
-    others(state: UseCollaborationState) {
-      return state.collaborators.filter(({ id }) => id !== state.id)
-    },
+    // others(state: UseCollaborationState) {
+    //   return state.collaborators.filter(({ id }) => id !== state.id)
+    // },
   },
   actions: {
     openDialog() {
@@ -51,17 +38,6 @@ export const useCollaboration = defineStore({
 
     closeDialog() {
       this.isDialogOpen = false
-    },
-
-    addCollaborator(collaborator: Collaborator) {
-      this.collaborators = [
-        ...this.collaborators,
-        collaborator,
-      ]
-    },
-
-    removeCollaborator(id: string) {
-      this.collaborators = this.collaborators.filter(c => c.id !== id)
     },
   },
 })

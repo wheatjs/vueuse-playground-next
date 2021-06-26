@@ -3,15 +3,13 @@ import { until, createEventHook, tryOnUnmounted } from '@vueuse/core'
 import darkTheme from 'theme-vitesse/themes/vitesse-dark.json'
 import lightTheme from 'theme-vitesse/themes/vitesse-light.json'
 import type { editor as Editor } from 'monaco-editor'
-import { RemoteCursorManager } from '@convergencelabs/monaco-collab-ext'
+import { SFCType } from '@playground/shared'
 import { isDark } from '~/hooks'
 import { editorPlugins } from '~/monaco/plugins/editor'
-import { useCollaboration } from '~/store'
 import { editors } from '~/store/editors'
 import setupMonaco from '~/monaco'
 
-export function useMonaco(target: Ref, options: any) {
-  const collaboration = useCollaboration()
+export function useMonaco(target: Ref, options: any, type: SFCType) {
   const changeEventHook = createEventHook<string>()
   const isSetup = ref(false)
   let editor: Editor.IStandaloneCodeEditor
@@ -24,10 +22,8 @@ export function useMonaco(target: Ref, options: any) {
 
   const init = async() => {
     const { monaco } = await setupMonaco()
-    // @ts-expect-error
-    monaco.editor.defineTheme('vitesse-dark', darkTheme)
-    // @ts-expect-error
-    monaco.editor.defineTheme('vitesse-light', lightTheme)
+    monaco.editor.defineTheme('vitesse-dark', darkTheme as unknown as Editor.IStandaloneThemeData)
+    monaco.editor.defineTheme('vitesse-light', lightTheme as unknown as Editor.IStandaloneThemeData)
 
     watch(target, () => {
       const el = unref(target)
@@ -80,10 +76,7 @@ export function useMonaco(target: Ref, options: any) {
         plugins.forEach(({ onContentChanged }) => onContentChanged(editor))
       })
 
-      editors.push({
-        type: options.language,
-        editor,
-      })
+      editors.push({ type, editor })
     }, {
       flush: 'post',
       immediate: true,
