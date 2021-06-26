@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { createEventHook } from '@vueuse/core'
 import { searchPackages, PackageSearchItem } from '~/services'
 import { resolvePackage } from '~/services/jsdelivr'
 
@@ -17,8 +18,10 @@ interface UsePackagesState {
   results: Partial<PackageSearchItem>[]
 }
 
-const JSDELIVR_URL = (name: string) => `https://cdn.jsdelivr.net/npm/${name}/+esm`
 const UNPKG_URL = (name: string, url: string) => `https://unpkg.com/${name}/${url}`
+
+const addPackageHook = createEventHook<string>()
+const removePackageHook = createEventHook<string>()
 
 export const usePackages = defineStore({
   id: 'packages',
@@ -61,6 +64,12 @@ export const usePackages = defineStore({
           ...x,
         })),
       ]
+      addPackageHook.trigger(name)
+    },
+    async removePackage(query: string) {
+      // TODO: Also remove any other dependencies
+      this.packages = this.packages.filter(({ name }) => name !== query)
+      removePackageHook.trigger(query)
     },
     async searchPackages(query: string) {
       this.isLoading = true
@@ -70,3 +79,6 @@ export const usePackages = defineStore({
     },
   },
 })
+
+export const onAddPackage = addPackageHook.on
+export const onRemovePackage = removePackageHook.on

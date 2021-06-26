@@ -1,7 +1,8 @@
+import { watch } from 'vue'
 import { io, Socket } from 'socket.io-client'
 import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent } from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
-import { useCollaboration, playground } from '~/store'
+import { useCollaboration, usePackages, onAddPackage, onRemovePackage } from '~/store'
 import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
 
@@ -17,6 +18,7 @@ export class CollaborationManager {
   private client: Socket
   private username: string
   private collaboration = useCollaboration()
+  private packages = usePackages()
   private fileEditors: FileEditor[] = []
 
   constructor() {
@@ -25,7 +27,7 @@ export class CollaborationManager {
   }
 
   public connect(session?: string) {
-    this.client = io('ws://localhost:4000', {
+    this.client = io('ws://vueuse.black-kro.dev', {
       // @ts-ignore
       query: {
         ...removeEmpty({
@@ -104,6 +106,12 @@ export class CollaborationManager {
     this.client.on(SocketEvent.EditorReplace, (data: EditorReplaceEvent) => this.onEditorReplace(data))
     this.client.on(SocketEvent.EditorCursor, (data: EditorCursorEvent) => this.onEditorCursor(data))
     this.client.on(SocketEvent.EditorSelection, (data: EditorSelectionEvent) => this.onEditorSelection(data))
+
+    /**
+     * Non-Socket Listeners
+     */
+    onAddPackage(name => this.emitPackageAddEvent({ name }))
+    onRemovePackage(name => this.emitPackageRemoveEvent({ name }))
   }
 
   private emit<T>(name: SocketEvent, payload: Omit<T, 'sender' | 'timestamp'>) {
@@ -144,12 +152,12 @@ export class CollaborationManager {
     // TODO
   }
 
-  private onPackageAdd(data: PackageAddEvent) {
-    // TODO
+  private onPackageAdd({ name }: PackageAddEvent) {
+    this.packages.addPackage(name)
   }
 
-  private onPackageRemove(data: PackageRemoveEvent) {
-    // TODO
+  private onPackageRemove({ name }: PackageRemoveEvent) {
+    this.packages.removePackage(name)
   }
 
   private onEditorInsert({ index, text, sfcType }: EditorInsertEvent) {
