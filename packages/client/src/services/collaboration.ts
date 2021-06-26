@@ -108,7 +108,7 @@ export class CollaborationManager {
 
   private emit<T>(name: SocketEvent, payload: Omit<T, 'sender' | 'timestamp'>) {
     this.client.emit(name, {
-      sender: this.username,
+      sender: this.collaboration.id,
       timestamp: Date.now(),
       ...payload,
     } as BaseEvent)
@@ -122,12 +122,14 @@ export class CollaborationManager {
     this.collaboration.isConnected = false
   }
 
-  private onRoomCreated({ session }: RoomCreatedEvent) {
+  private onRoomCreated({ session, id }: RoomCreatedEvent) {
     this.collaboration.session = session
+    this.collaboration.id = id
   }
 
-  private onRoomJoined(data: RoomJoinedEvent) {
-    // TODO
+  private onRoomJoined({ id, session }: RoomJoinedEvent) {
+    this.collaboration.id = id
+    this.collaboration.session = session
   }
 
   private onSyncCollaborators({ collaborators }: SyncCollaboratorsEvent) {
@@ -178,7 +180,7 @@ export class CollaborationManager {
     this.fileEditors
       .filter(({ type }) => type === sfcType)
       .forEach(({ manager }) => {
-        manager.setCursorPosition(sender, sender, 'red', offset)
+        manager.setCursorPosition(sender, this.getUsernameById(sender), 'red', offset)
       })
   }
 
@@ -224,5 +226,9 @@ export class CollaborationManager {
 
   public emitEditorSelectionEvent(data: EmitParameter<EditorSelectionEvent>) {
     this.emit(SocketEvent.EditorSelection, data)
+  }
+
+  private getUsernameById(id: string) {
+    return this.collaboration.collaborators.find(user => user.id === id)?.username || id
   }
 }

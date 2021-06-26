@@ -5,11 +5,11 @@ const collaboration = useCollaboration()
 </script>
 
 <template>
-  <!-- <div
-    v-for="collaborator in collaboration.others"
+  <div
+    v-for="collaborator in collaboration.otherCollaborators"
     :key="collaborator.id"
     v-motion
-    v-tooltip.right="collaborator.name"
+    v-tooltip.right="collaborator.username"
     :delay="0"
     :initial="{
       y: 100
@@ -26,6 +26,6 @@ const collaboration = useCollaboration()
     flex="~"
     place="items-center content-center"
   >
-    {{ collaborator.name[0] }}
-  </div> -->
+    {{ collaborator.username[0] }}
+  </div>
 </template>

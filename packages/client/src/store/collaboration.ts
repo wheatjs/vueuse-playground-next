@@ -27,9 +27,9 @@ export const useCollaboration = defineStore({
       return url.toString()
     },
 
-    // others(state: UseCollaborationState) {
-    //   return state.collaborators.filter(({ id }) => id !== state.id)
-    // },
+    otherCollaborators(state: UseCollaborationState) {
+      return state.collaborators.filter(({ id }) => id !== state.id)
+    },
   },
   actions: {
     openDialog() {

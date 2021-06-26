@@ -1,7 +1,7 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid } from 'nanoid'
-import { SocketEvent } from '@playground/shared'
+import { Collaborator, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent } from '@playground/shared'
 
 const server = createServer()
 const io = new Server(server, {
@@ -27,16 +27,19 @@ io.on('connection', async(socket) => {
 
   if (session) {
     socket.join(session)
-    socket.emit(SocketEvent.RoomJoined)
-    const users = (await io.in(session).fetchSockets())
-      .map(room => room.handshake.query.username)
-    io.to(session).emit(SocketEvent.SyncCollaborators, users)
+    socket.emit(SocketEvent.RoomJoined, { id: socket.id, sender: 'server', timestamp: Date.now() } as RoomJoinedEvent)
+
+    const usersInRoom = (await io.in(session).fetchSockets())
+
+    if (usersInRoom) {
+      const users: Collaborator[] = usersInRoom.map(user => ({ id: user.id, username: (user.handshake.query.username as string) }))
+      io.to(session).emit(SocketEvent.SyncCollaborators, { collaborators: users } as SyncCollaboratorsEvent)
+    }
   }
   else {
     session = nanoid(8)
-    console.log(session)
     socket.join(session)
-    socket.emit(SocketEvent.RoomCreated, { session })
+    socket.emit(SocketEvent.RoomCreated, { id: socket.id, sender: 'server', timestamp: Date.now(), session } as RoomCreatedEvent)
   }
 
   socket.onAny((eventName, data) => {
@@ -50,11 +53,13 @@ io.on('connection', async(socket) => {
     })
   })
 
-  socket.on('disconnected', async() => {
-    const users = (await io.in(session).fetchSockets())
-      .map(room => room.handshake.query.username)
+  socket.on('disconnect', async() => {
+    const usersInRoom = (await io.in(session).fetchSockets())
 
-    io.to(session).emit(SocketEvent.SyncCollaborators, users)
+    if (usersInRoom) {
+      const users: Collaborator[] = usersInRoom.map(user => ({ id: user.id, username: (user.handshake.query.username as string) }))
+      io.to(session).emit(SocketEvent.SyncCollaborators, { collaborators: users } as SyncCollaboratorsEvent)
+    }
   })
 })
 

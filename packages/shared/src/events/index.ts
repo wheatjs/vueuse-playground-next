@@ -49,10 +49,12 @@ export interface PackageRemoveEvent extends BaseEvent {
 }
 
 export interface RoomCreatedEvent extends BaseEvent {
+  id: string
   session: string
 }
 
 export interface RoomJoinedEvent extends BaseEvent {
+  id: string
   session: string
 }
 
