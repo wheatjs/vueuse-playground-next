@@ -2,17 +2,17 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid } from 'nanoid'
 import { Collaborator, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent } from '@playground/shared'
-import express from 'express';
-import { json } from 'body-parser';
-import { Router } from 'express';
-import dbRoutes from './routes';
+import express, { Router } from 'express'
+import { json } from 'body-parser'
 
-const routes = Router();
-routes.use('/playgrounds', dbRoutes);
+import dbRoutes from './routes'
 
-const app = express();
+const routes = Router()
+routes.use('/playgrounds', dbRoutes)
+
+const app = express()
 app.use(json())
-app.use(routes);
+app.use(routes)
 
 const server = createServer(app)
 
