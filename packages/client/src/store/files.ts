@@ -88,7 +88,7 @@ interface ExportedFile {
   filename: string
 }
 
-interface FileExports {
+export interface FileExports {
   activeFilename: string
   files: ExportedFile[]
 }

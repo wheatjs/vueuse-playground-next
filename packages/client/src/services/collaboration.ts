@@ -1,8 +1,7 @@
-import { watch } from 'vue'
 import { io, Socket } from 'socket.io-client'
 import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent } from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
-import { useCollaboration, usePackages, onAddPackage, onRemovePackage } from '~/store'
+import { useCollaboration, usePackages, onAddPackage, onRemovePackage, exportFiles, importFiles } from '~/store'
 import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
 
@@ -20,6 +19,7 @@ export class CollaborationManager {
   private collaboration = useCollaboration()
   private packages = usePackages()
   private fileEditors: FileEditor[] = []
+  private hasSynced = false
 
   constructor() {
     this.username = this.collaboration.username
@@ -133,23 +133,33 @@ export class CollaborationManager {
   private onRoomCreated({ session, id }: RoomCreatedEvent) {
     this.collaboration.session = session
     this.collaboration.id = id
+    this.hasSynced = true
   }
 
   private onRoomJoined({ id, session }: RoomJoinedEvent) {
     this.collaboration.id = id
     this.collaboration.session = session
+    this.emitFileSyncRequest({})
   }
 
   private onSyncCollaborators({ collaborators }: SyncCollaboratorsEvent) {
     this.collaboration.collaborators = collaborators
   }
 
-  private onSyncFilesRequest(data: SyncFilesRequestEvent) {
-    // TODO
+  private onSyncFilesRequest({ sender }: SyncFilesRequestEvent) {
+    this.emitFileSyncResponse({
+      to: sender,
+      ...exportFiles(),
+    })
   }
 
-  private onSyncFilesResponse(data: SyncFilesResponseEvent) {
-    // TODO
+  private onSyncFilesResponse({ activeFilename, files }: SyncFilesResponseEvent) {
+    importFiles({
+      files,
+      activeFilename,
+    })
+
+    setTimeout(() => this.hasSynced = true, 500)
   }
 
   private onPackageAdd({ name }: PackageAddEvent) {
@@ -200,13 +210,21 @@ export class CollaborationManager {
       })
   }
 
-  public emitSyncPackagesRequest(data: EmitParameter<SyncFilesRequestEvent>) {
+  public emitFileSyncRequest(data: EmitParameter<SyncFilesRequestEvent>) {
     this.emit(SocketEvent.SyncFilesRequest, data)
   }
 
-  public emitSyncPackagesResponse(data: EmitParameter<SyncFilesResponseEvent>) {
+  public emitFileSyncResponse(data: EmitParameter<SyncFilesResponseEvent>) {
     this.emit(SocketEvent.SyncFilesResponse, data)
   }
+
+  // public emitSyncPackagesRequest(data: EmitParameter<SyncFilesRequestEvent>) {
+  //   this.emit(SocketEvent.SyncFilesRequest, data)
+  // }
+
+  // public emitSyncPackagesResponse(data: EmitParameter<SyncFilesResponseEvent>) {
+  //   this.emit(SocketEvent.SyncFilesResponse, data)
+  // }
 
   public emitPackageAddEvent(data: EmitParameter<PackageAddEvent>) {
     this.emit(SocketEvent.PackageAdd, data)
@@ -217,22 +235,37 @@ export class CollaborationManager {
   }
 
   public emitEditorInsertEvent(data: EmitParameter<EditorInsertEvent>) {
+    if (!this.hasSynced)
+      return
+
     this.emit(SocketEvent.EditorInsert, data)
   }
 
   public emitEditorDeleteEvent(data: EmitParameter<EditorDeleteEvent>) {
+    if (!this.hasSynced)
+      return
+
     this.emit(SocketEvent.EditorDelete, data)
   }
 
   public emitEditorReplaceEvent(data: EmitParameter<EditorReplaceEvent>) {
+    if (!this.hasSynced)
+      return
+
     this.emit(SocketEvent.EditorReplace, data)
   }
 
   public emitEditorCursorEvent(data: EmitParameter<EditorCursorEvent>) {
+    if (!this.hasSynced)
+      return
+
     this.emit(SocketEvent.EditorCursor, data)
   }
 
   public emitEditorSelectionEvent(data: EmitParameter<EditorSelectionEvent>) {
+    if (!this.hasSynced)
+      return
+
     this.emit(SocketEvent.EditorSelection, data)
   }
 

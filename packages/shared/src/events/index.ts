@@ -28,6 +28,18 @@ export interface Collaborator {
   username: string
 }
 
+interface ExportedFile {
+  template: string
+  script: string
+  style: string
+  filename: string
+}
+
+export interface FileExports {
+  activeFilename: string
+  files: ExportedFile[]
+}
+
 export type SFCType = 'template' | 'script' | 'style'
 
 export interface BaseEvent {
@@ -66,8 +78,8 @@ export interface SyncFilesRequestEvent extends BaseEvent {
 
 }
 
-export interface SyncFilesResponseEvent extends BaseEvent {
-
+export interface SyncFilesResponseEvent extends BaseEvent, FileExports {
+  to: string
 }
 
 export interface EditorInsertEvent extends FileOperationEvent {

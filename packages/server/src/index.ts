@@ -1,18 +1,18 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid } from 'nanoid'
-import { Collaborator, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent } from '@playground/shared'
+import { Collaborator, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent, SyncFilesRequestEvent, SyncFilesResponseEvent } from '@playground/shared'
 import express, { Router } from 'express'
 import { json } from 'body-parser'
 
-import dbRoutes from './routes'
+// import dbRoutes from './routes'
 
-const routes = Router()
-routes.use('/playgrounds', dbRoutes)
+// const routes = Router()
+// routes.use('/playgrounds', dbRoutes)
 
 const app = express()
-app.use(json())
-app.use(routes)
+// app.use(json())
+// app.use(routes)
 
 const server = createServer(app)
 
@@ -30,12 +30,15 @@ const reserved = [
   'disconnecting',
   'newListener',
   'removeListener',
+  SocketEvent.SyncFilesRequest,
+  SocketEvent.SyncFilesResponse,
 ]
 
 io.on('connection', async(socket) => {
   let username: any
   let session: any
   ({ username, session } = socket.handshake.query) // eslint-disable-line prefer-const
+  socket.data.timestamp = Date.now()
 
   if (session) {
     socket.join(session)
@@ -63,6 +66,22 @@ io.on('connection', async(socket) => {
       username,
       ...data,
     })
+  })
+
+  socket.on(SocketEvent.SyncFilesRequest, async(data: SyncFilesRequestEvent) => {
+    // Find the socket user who has been here the longest
+    // and get the files from them
+    const usersInRoom = (await io.in(session).fetchSockets())
+
+    usersInRoom.sort((x, y) => x.data.timestamp - y.data.timestamp)
+    usersInRoom[0].emit(SocketEvent.SyncFilesRequest, data)
+  })
+
+  socket.on(SocketEvent.SyncFilesResponse, async(data: SyncFilesResponseEvent) => {
+    // Send the files to the appropriate socket
+    const usersInRoom = (await io.in(session).fetchSockets())
+
+    usersInRoom.find(({ id }) => id === data.to)?.emit(SocketEvent.SyncFilesResponse, data)
   })
 
   socket.on('disconnect', async() => {
