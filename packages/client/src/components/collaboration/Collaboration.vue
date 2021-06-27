@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import { watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useClipboard } from '@vueuse/core'
 import { useCollaboration } from '~/store'
 import { CollaborationManager } from '~/services/collaboration'
 
 const route = useRoute()
 const manager = new CollaborationManager()
 const collaboration = useCollaboration()
+const clipboard = useClipboard()
 
 const stop = watch(() => [route.query], () => {
   if (route.query.room && !collaboration.isConnected) {
     stop()
+    // To ensure the editors have been mounted
+    // probably need to come up with a better solution
     setTimeout(() => {
-      manager.connect(route.query.room.toString())
+      if (route.query.room)
+        manager.connect(route.query.room.toString())
     }, 500)
   }
 })
@@ -22,6 +27,11 @@ const connect = () => {
     return
 
   manager.connect()
+}
+
+const disconnect = () => {
+  if (collaboration.isConnected)
+    manager.disconnect()
 }
 </script>
 
@@ -41,17 +51,26 @@ const connect = () => {
         <template #icon>
           <carbon-link />
         </template>
-        <Button v-tooltip="'Generate New URL'">
-          <carbon-renew />
+        <Button v-tooltip="'Copy to Clipboard'">
+          <carbon-copy />
         </Button>
       </Textfield>
-      <p>
-        Create a new session to connect to up to 4 other users.
+      <p v-else>
+        Start a collaboration session and send a link to other people to invite them to your session. When your
+        start a session, everyone who connects will automatically sync with your playground.
       </p>
     </div>
     <DialogFooter>
-      <Button @click="connect()">
-        Create Session
+      <Button @click="collaboration.closeDialog()">
+        Close
+      </Button>
+      <Button v-if="!collaboration.isConnected" primary @click="connect()">
+        <carbon-play />
+        Start Session
+      </Button>
+      <Button v-else primary @click="disconnect()">
+        <carbon-stop />
+        Stop Session
       </Button>
     </DialogFooter>
   </Dialog>

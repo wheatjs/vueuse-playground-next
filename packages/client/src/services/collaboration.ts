@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client'
-import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent } from '@playground/shared'
+import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent, CollaboratorDisconnetEvent } from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, exportFiles, importFiles } from '~/store'
 import { editors } from '~/store/editors'
@@ -20,30 +20,45 @@ export class CollaborationManager {
   private packages = usePackages()
   private fileEditors: FileEditor[] = []
   private hasSynced = false
+  private hasAttached = false
 
   constructor() {
     this.username = this.collaboration.username
-    this.client = io('')
+    // this.client = io('')
   }
 
   public connect(session?: string) {
-    this.client = io('ws://vueuse.black-kro.dev', {
-      // @ts-ignore
-      query: {
-        ...removeEmpty({
-          username: this.username,
-          session,
-        }),
-      },
-    })
+    if (!this.client) {
+      this.client = io('ws://localhost:4000', {
+        // @ts-ignore
+        query: {
+          ...removeEmpty({
+            username: this.username,
+            session,
+          }),
+        },
+      })
+    }
 
     this.attachEditors()
-    this.attachEventListeners()
+    if (!this.hasAttached) {
+      this.attachEventListeners()
+      this.hasAttached = true
+    }
+
     this.client.connect()
   }
 
   public disconnect() {
     this.client.disconnect()
+    this.collaboration.collaborators = []
+    this.fileEditors.forEach(({ manager }) => {
+      manager.disconnect()
+      manager.removeAllCursors()
+      manager.removeAllSelections()
+    })
+    this.fileEditors = []
+    this.hasSynced = false
   }
 
   private attachEditors() {
@@ -93,6 +108,7 @@ export class CollaborationManager {
 
     this.client.on(SocketEvent.RoomCreated, (data: RoomCreatedEvent) => this.onRoomCreated(data))
     this.client.on(SocketEvent.RoomJoined, (data: RoomJoinedEvent) => this.onRoomJoined(data))
+    this.client.on(SocketEvent.CollaboratorDisconnet, (data: CollaboratorDisconnetEvent) => this.onCollaboratorDisconnect(data))
 
     this.client.on(SocketEvent.SyncCollaborators, (data: SyncCollaboratorsEvent) => this.onSyncCollaborators(data))
     this.client.on(SocketEvent.SyncFilesRequest, (data: SyncFilesRequestEvent) => this.onSyncFilesRequest(data))
@@ -130,6 +146,13 @@ export class CollaborationManager {
     this.collaboration.isConnected = false
   }
 
+  private onCollaboratorDisconnect({ sender }: CollaboratorDisconnetEvent) {
+    this.fileEditors.forEach(({ manager }) => {
+      manager.removeCursor(sender)
+      manager.removeSelection(sender)
+    })
+  }
+
   private onRoomCreated({ session, id }: RoomCreatedEvent) {
     this.collaboration.session = session
     this.collaboration.id = id
@@ -159,7 +182,7 @@ export class CollaborationManager {
       activeFilename,
     })
 
-    setTimeout(() => this.hasSynced = true, 500)
+    setTimeout(() => this.hasSynced = true, 100)
   }
 
   private onPackageAdd({ name }: PackageAddEvent) {

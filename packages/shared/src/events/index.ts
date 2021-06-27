@@ -5,6 +5,8 @@ export enum SocketEvent {
   RoomCreated = 'room-created',
   RoomJoined = 'room-joined',
 
+  CollaboratorDisconnet = 'collaborator-disconnect',
+
   SyncCollaborators = 'sync-collaborators',
   SyncFilesRequest = 'sync-files-request',
   SyncFilesResponse = 'sync-files-response',
@@ -45,6 +47,10 @@ export type SFCType = 'template' | 'script' | 'style'
 export interface BaseEvent {
   sender: string
   timestamp: number
+}
+
+export interface CollaboratorDisconnetEvent extends BaseEvent {
+
 }
 
 export interface FileOperationEvent extends BaseEvent {

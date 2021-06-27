@@ -1,7 +1,7 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid } from 'nanoid'
-import { Collaborator, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent, SyncFilesRequestEvent, SyncFilesResponseEvent } from '@playground/shared'
+import { Collaborator, CollaboratorDisconnetEvent, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent, SyncFilesRequestEvent, SyncFilesResponseEvent } from '@playground/shared'
 import express, { Router } from 'express'
 import { json } from 'body-parser'
 
@@ -85,8 +85,9 @@ io.on('connection', async(socket) => {
   })
 
   socket.on('disconnect', async() => {
-    const usersInRoom = (await io.in(session).fetchSockets())
+    io.to(session).emit(SocketEvent.CollaboratorDisconnet, { sender: socket.id, timestamp: Date.now() } as CollaboratorDisconnetEvent)
 
+    const usersInRoom = (await io.in(session).fetchSockets())
     if (usersInRoom) {
       const users: Collaborator[] = usersInRoom.map(user => ({ id: user.id, username: (user.handshake.query.username as string) }))
       io.to(session).emit(SocketEvent.SyncCollaborators, { collaborators: users } as SyncCollaboratorsEvent)

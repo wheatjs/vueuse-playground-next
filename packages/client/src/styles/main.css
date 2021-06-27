@@ -68,17 +68,19 @@ html.dark {
   pointer-events: none;
   z-index: 4000;
   width: 2px;
+  @apply rounded-sm;
 }
 
 .monaco-remote-cursor:before {
   content: "";
-  width: 6px;
-  height: 5px;
   display: block;
   margin-left: -2px;
   margin-top: 0;
   z-index: 4000;
   background: inherit;
+  width: 6px;
+  height: 6px;
+  @apply rounded-full;
 }
 
 .monaco-remote-cursor-tooltip {
@@ -93,5 +95,5 @@ html.dark {
   position: absolute;
   pointer-events: auto;
   opacity: 0.3;
-  background: blue;
+  @apply rounded-sm;
 }

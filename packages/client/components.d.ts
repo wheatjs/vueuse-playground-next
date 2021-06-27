@@ -48,9 +48,11 @@ declare module 'vue' {
     VscodeIconsFileTypeVue: typeof import('virtual:vite-icons/vscode-icons/file-type-vue')['default']
     VscodeIconsFileTypeVite: typeof import('virtual:vite-icons/vscode-icons/file-type-vite')['default']
     LogosWebpack: typeof import('virtual:vite-icons/logos/webpack')['default']
-    CarbonRenew: typeof import('virtual:vite-icons/carbon/renew')['default']
-    CarbonSearch: typeof import('virtual:vite-icons/carbon/search')['default']
+    CarbonCopy: typeof import('virtual:vite-icons/carbon/copy')['default']
+    CarbonPlay: typeof import('virtual:vite-icons/carbon/play')['default']
+    CarbonStop: typeof import('virtual:vite-icons/carbon/stop')['default']
     MdiCheck: typeof import('virtual:vite-icons/mdi/check')['default']
+    CarbonSearch: typeof import('virtual:vite-icons/carbon/search')['default']
     CarbonClose: typeof import('virtual:vite-icons/carbon/close')['default']
   }
 }

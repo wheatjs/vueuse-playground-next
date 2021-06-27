@@ -30,8 +30,30 @@ const collaboration = useCollaboration()
     <IconButton v-tooltip.right="'Download'" class="transform hover:-rotate-8" @click="download.openDialog()">
       <carbon-download />
     </IconButton>
-    <IconButton v-tooltip.right="'Collaborate'" class="transform hover:-rotate-8" @click="collaboration.openDialog()">
-      <carbon-connect />
+    <IconButton
+      v-tooltip.right="'Collaborate'"
+      class="transform hover:-rotate-8"
+      :class="{ '!text-green-500 !text-opacity-20': collaboration.isConnected }"
+      @click="collaboration.openDialog()"
+    >
+      <carbon-connect :class="{ '!text-green-400': collaboration.isConnected }" />
+      <!-- Badge to indicate how many users are connected -->
+      <div
+        v-if="collaboration.isConnected"
+        position="absolute top-0 right-0"
+        text="xs green-900"
+        font="bold"
+        bg="green-500"
+        w="5"
+        h="5"
+        m="-r-1 -t-1"
+        rounded="full"
+        flex="~"
+        place="items-center content-center"
+        ring="2 dark-900"
+      >
+        {{ collaboration.otherCollaborators.length }}
+      </div>
     </IconButton>
     <span flex="1" />
     <IconButton v-tooltip.right="'Toggle Theme'" class="transform hover:rotate-12" @click="toggleDark()">
