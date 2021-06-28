@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div flex="~ col" w="full" h="full" bg="light-500 dark:dark-800" border="1 light-900 dark:dark-400 rounded">
+  <div w="full" h="full" bg="light-500 dark:dark-800" border="1 light-900 dark:dark-400 rounded">
     <div
       p="x-2"
       h="8"
@@ -20,8 +20,14 @@
       </div>
       <slot name="overflow" />
     </div>
-    <div flex="1" overflow="hidden">
+    <div class="calc-height">
       <slot />
     </div>
   </div>
 </template>
+
+<style>
+  .calc-height {
+    height: calc(100% - 2rem);
+  }
+</style>

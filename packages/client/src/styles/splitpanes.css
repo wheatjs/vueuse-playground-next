@@ -15,7 +15,7 @@
 }
 
 .splitpanes__pane {
-  @apply h-full w-full overflow-hidden;
+  @apply h-full w-full;
 }
 
 .splitpanes--vertical .splitpanes__pane {

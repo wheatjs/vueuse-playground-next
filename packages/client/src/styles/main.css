@@ -86,7 +86,7 @@ html.dark {
 .monaco-remote-cursor-tooltip {
   position: absolute;
   white-space: nowrap;
-  z-index: 4000;
+  z-index: 40000;
   transition: opacity 0.5s ease-out;
   @apply rounded-sm px-2 py-1 text-xs shadow font-sans opacity-1 text-white;
 }

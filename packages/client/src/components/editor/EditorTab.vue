@@ -26,7 +26,7 @@ const canDelete = computed(() => !PROTECTED_FILES.includes(props.name))
     <div m="l-2" text="dark:(light-900 opacity-70)">
       <slot />
     </div>
-    <IconButton v-if="canDelete" mini>
+    <IconButton mini>
       <carbon-close />
     </IconButton>
   </div>

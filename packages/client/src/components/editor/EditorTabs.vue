@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import Muuri from 'muuri'
+import IconButton from '../ui/Button/IconButton.vue'
 import { playground } from '~/store'
 
 let instance: Muuri
@@ -72,7 +73,14 @@ onUnmounted(() => {
       w="12"
       h="8"
       z="200"
-    ></div>
+      flex="~"
+      items="center"
+      justify="end"
+    >
+      <IconButton pointer="auto" mini text="dark:dark-300">
+        <carbon-add />
+      </IconButton>
+    </div>
   </div>
 </template>
 

@@ -51,6 +51,7 @@ declare module 'vue' {
     CarbonCopy: typeof import('virtual:vite-icons/carbon/copy')['default']
     CarbonPlay: typeof import('virtual:vite-icons/carbon/play')['default']
     CarbonStop: typeof import('virtual:vite-icons/carbon/stop')['default']
+    CarbonAdd: typeof import('virtual:vite-icons/carbon/add')['default']
     MdiCheck: typeof import('virtual:vite-icons/mdi/check')['default']
     CarbonSearch: typeof import('virtual:vite-icons/carbon/search')['default']
     CarbonClose: typeof import('virtual:vite-icons/carbon/close')['default']

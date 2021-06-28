@@ -23,6 +23,10 @@ export const useCollaboration = defineStore({
   getters: {
     shareLink(state: UseCollaborationState) {
       const url = new URL(window.location.href)
+
+      if (url.searchParams.has('room'))
+        url.searchParams.delete('room')
+
       url.searchParams.append('room', state.session || '')
       return url.toString()
     },
