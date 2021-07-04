@@ -26,7 +26,12 @@ shouldUpdate(() => {
                 <template #title>
                   <mdi-code-braces />
                   <span>
-                    Script Setup
+                    <template v-if="playground.activeFilename === '__APP__'">
+                      Main
+                    </template>
+                    <template v-else>
+                      Script Setup
+                    </template>
                   </span>
                 </template>
                 <template #overflow>
@@ -43,12 +48,20 @@ shouldUpdate(() => {
             <Pane>
               <Container>
                 <template #title>
-                  <mdi-code-tags />
+                  <carbon-settings v-if="playground.activeFilename === '__APP__'" />
+                  <mdi-code-tags v-else />
                   <span>
-                    Template
+                    <template v-if="playground.activeFilename === '__APP__'">
+                      App Settings
+                    </template>
+                    <template v-else>
+                      Template
+                    </template>
                   </span>
                 </template>
+
                 <Editor
+                  v-show="playground.activeFilename !== '__APP__'"
                   language="html"
                   :value="template"
                   type="template"
@@ -91,6 +104,8 @@ shouldUpdate(() => {
                 </span>
               </template>
               <div h="full" overflow="auto">
+                <pre>{{ script }}</pre>
+                <pre>{{ template }}</pre>
                 <!-- <pre>
                   {{ playground }}
                 </pre> -->

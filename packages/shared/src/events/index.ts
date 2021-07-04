@@ -115,6 +115,9 @@ export interface EditorSelectionEvent extends FileOperationEvent {
 
 export interface FileAddEvent extends BaseEvent {
   name: string
+  template: string
+  script: string
+  style: string
 }
 
 export interface FileRenameEvent extends BaseEvent {

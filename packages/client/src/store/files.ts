@@ -47,10 +47,20 @@ export interface Files {
 }
 
 const updateHook = createEventHook()
+const createFileHook = createEventHook<File>()
+const deleteFileHook = createEventHook<string>()
 
-export const PROTECTED_FILES = ['App.vue']
+export const VALID_EXTENSIONS = ['vue', 'css', 'json']
+export const PROTECTED_FILES = ['App.vue', '__APP__', '__PROTECTED__']
 
 export const playground: Files = reactive({
+  app: `
+export default {
+  enhanceApp({ app }) {
+
+  }
+}
+  `,
   files: {
     'App.vue': new File('App.vue', '', ''),
   },
@@ -63,14 +73,20 @@ export const playground: Files = reactive({
   },
 })
 
-export function createFile(file: File) {
+export function createFile(file: File, silent = false) {
   playground.files[file.filename] = file
   compileFile(playground.files[file.filename])
+
+  if (!silent)
+    createFileHook.trigger(file)
 }
 
-export function deleteFile(filename: string) {
+export function deleteFile(filename: string, silent = false) {
   delete playground.files[filename]
   setTimeout(() => openFile('App.vue'), 0)
+
+  if (!silent)
+    deleteFileHook.trigger(filename)
 }
 
 export function deleteAllFiles() {
@@ -79,6 +95,9 @@ export function deleteAllFiles() {
 
 export function openFile(filename: string) {
   playground.activeFilename = filename
+  setTimeout(() => {
+    updateHook.trigger(null)
+  }, 0)
 }
 
 interface ExportedFile {
@@ -129,4 +148,6 @@ watchEffect(() => {
     compileFile(playground.currentFile)
 })
 
+export const onCreateFile = createFileHook.on
+export const onDeleteFile = deleteFileHook.on
 export const shouldUpdate = updateHook.on

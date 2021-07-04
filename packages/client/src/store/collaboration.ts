@@ -8,6 +8,7 @@ interface UseCollaborationState {
   isConnected: boolean
   isDialogOpen: boolean
   collaborators: Collaborator[]
+  suppressContentEvent: boolean
 }
 
 export const useCollaboration = defineStore({
@@ -19,6 +20,7 @@ export const useCollaboration = defineStore({
     isConnected: false,
     isDialogOpen: false,
     collaborators: [],
+    suppressContentEvent: false,
   }) as UseCollaborationState,
   getters: {
     shareLink(state: UseCollaborationState) {

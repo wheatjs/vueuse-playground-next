@@ -16,10 +16,10 @@
     "enableNonBrowserBranches": true
   },
   "dependencies": {
-    "@playground/shared": "workspace:*",
     "@antfu/utils": "^0.2.1",
     "@convergencelabs/monaco-collab-ext": "^0.3.2",
     "@headlessui/vue": "^1.2.0",
+    "@playground/shared": "workspace:*",
     "@vue/runtime-core": "^3.1.1",
     "@vue/runtime-dom": "^3.1.1",
     "@vue/shared": "^3.1.1",
@@ -32,7 +32,6 @@
     "firebase": "^9.0.0-beta.5",
     "monaco-editor": "^0.25.1",
     "monaco-editor-core": "^0.25.0",
-    "muuri": "^0.9.4",
     "nanoid": "^3.1.23",
     "pinia": "^2.0.0-beta.2",
     "socket.io-client": "^4.1.2",

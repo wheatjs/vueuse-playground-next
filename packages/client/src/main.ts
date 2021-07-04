@@ -8,7 +8,6 @@ import VTooltip from 'v-tooltip'
 import App from './App.vue'
 
 import 'virtual:windi.css'
-// import 'splitpanes/dist/splitpanes.css'
 import './styles/main.css'
 import './styles/tooltip.css'
 import './styles/splitpanes.css'

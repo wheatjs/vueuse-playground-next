@@ -1,7 +1,7 @@
 html,
 body,
 #app {
-  @apply h-full p-0 m-0;
+  @apply h-full p-0 m-0 overflow-hidden;
 }
 
 html.dark {

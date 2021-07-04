@@ -29,5 +29,8 @@
     "eslint": "^7.29.0",
     "pnpm": "^6.9.0",
     "tsup": "^4.11.2"
+  },
+  "dependencies": {
+    "automerge": "^1.0.1-preview.3"
   }
 }

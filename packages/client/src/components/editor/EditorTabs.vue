@@ -1,39 +1,51 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
-import Muuri from 'muuri'
-import IconButton from '../ui/Button/IconButton.vue'
-import { playground } from '~/store'
+import { computed, ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
+import Draggable from 'vuedraggable'
+import { playground, createFile, File, VALID_EXTENSIONS } from '~/store'
 
-let instance: Muuri
-const target = ref()
-const scrollTarget = ref()
+const target = ref<HTMLInputElement>()
+const isAddingFile = ref(false)
+const filename = ref('')
 
-onMounted(() => {
-  if (target.value && scrollTarget.value) {
-    instance = new Muuri(target.value, {
-      layout: {
-        horizontal: true,
-      },
-      dragStartPredicate: {
-        distance: 10,
-      },
-      dragAutoScroll: {
-        targets: [
-          {
-            element: scrollTarget.value,
-            axis: Muuri.AutoScroller.AXIS_X,
-          },
-        ],
-      },
-      dragEnabled: true,
-      dragAxis: 'x',
-    })
-  }
+const isValidFile = computed(() => {
+  if (filename.value in playground.files)
+    return false
+
+  return true
 })
 
-onUnmounted(() => {
-  if (instance)
-    instance.destroy()
+const files = computed(() => {
+  return Object.values(playground.files)
+})
+
+const doAddFile = () => {
+  isAddingFile.value = true
+  setTimeout(() => {
+    if (target.value)
+      target.value.focus()
+  }, 0)
+}
+
+const addFile = (name: string) => {
+  if (name.length > 0) {
+    // name = name.endsWith('.vue') ? name : `${name}.vue`
+    createFile(new File(name, '', '', ''))
+    isAddingFile.value = false
+    filename.value = ''
+  }
+}
+
+const onScroll = (e: WheelEvent) => {
+  e.preventDefault()
+  const target = (e.currentTarget as HTMLElement)
+  target.scrollLeft += e.deltaY
+}
+
+onClickOutside(target, () => {
+  isAddingFile.value = false
+  addFile(filename.value)
+  filename.value = ''
 })
 </script>
 
@@ -42,54 +54,54 @@ onUnmounted(() => {
     position="relative"
     border="1 light-900 dark:(dark-400 b-dark-300) rounded-t"
     bg="dark:dark-500"
+    h="8"
+    flex="shrink-0"
   >
-    <div
-      ref="scrollTarget"
-      position="relative"
-      overflow="hidden"
-      class="scroll-target"
-      h="8"
-      flex="shrink-0"
-    >
-      <div
-        ref="target"
-        class="grid relative"
-
-        h="8"
-      >
-        <div v-for="file in playground.files" :key="file.filename" class="item absolute">
-          <div class="item-content">
-            <EditorTab :name="file.filename">
-              {{ file.filename }}
-            </EditorTab>
-          </div>
+    <Draggable v-model="files" :component-data="{ 'onWheel': onScroll, class: 'flex h-full overflow-x-auto overflow-y-hidden small-scrollbar' }" item-key="filename">
+      <template #header>
+        <EditorTab no-icon name="__APP__">
+          <carbon-application />
+        </EditorTab>
+      </template>
+      <template #item="{ element }">
+        <EditorTab :name="element.filename" flex="inline">
+          {{ element.filename }}
+        </EditorTab>
+      </template>
+      <template #footer>
+        <div h="full" flex="~" place="items-center">
+          <EditorTab v-show="isAddingFile" name="__PROTECTED__">
+            <template #icon>
+              <vscode-icons-file-type-vue v-if="filename.endsWith('vue')" />
+              <vscode-icons-file-type-json v-else-if="filename.endsWith('js')" />
+              <vscode-icons-file-type-json v-else-if="filename.endsWith('json')" />
+              <vscode-icons-file-type-css v-else-if="filename.endsWith('css')" />
+              <vscode-icons-default-file v-else />
+            </template>
+            <input
+              ref="target"
+              v-model="filename"
+              type="text"
+              w="28"
+              text="dark:(placeholder-light-900 placeholder-opacity-40)"
+              bg="transparent"
+              outline="focus:none"
+              caret="green-500"
+              placeholder="Component.vue"
+              @keydown.enter="addFile(filename)"
+            />
+          </EditorTab>
+          <IconButton mini @click="doAddFile()">
+            <carbon-add />
+          </IconButton>
         </div>
-      </div>
-    </div>
-    <div
-      gradient="to-r to-dark-500 from-transparent"
-      pointer="none"
-      position="absolute top-0 right-0"
-      w="12"
-      h="8"
-      z="200"
-      flex="~"
-      items="center"
-      justify="end"
-    >
-      <IconButton pointer="auto" mini text="dark:dark-300">
-        <carbon-add />
-      </IconButton>
-    </div>
+      </template>
+    </Draggable>
   </div>
 </template>
 
 <style>
-  .muuri-item-dragging {
-    @apply shadow-lg z-100;
-  }
-
-  .scroll-target::-webkit-scrollbar {
-    height: 0 !important;
+  .small-scrollbar::-webkit-scrollbar {
+    height: 4px;
   }
 </style>

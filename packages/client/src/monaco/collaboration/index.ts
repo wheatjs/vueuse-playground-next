@@ -70,6 +70,11 @@ export class MonacoCollaborationManager {
       this.cursors[id].hide()
   }
 
+  public showCursor(id: string) {
+    if (id in this.cursors)
+      this.cursors[id].show()
+  }
+
   public removeCursor(id: string) {
     if (id in this.cursors) {
       this.cursors[id].dispose()

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { SFCType } from '@playground/shared'
 import { defineProps, defineEmit, ref, watch } from 'vue'
+import { shouldUpdate, useCollaboration } from '~/store'
 import { useMonaco } from '~/monaco/useMonaco'
 
+const collaboration = useCollaboration()
 const emit = defineEmit<(e: 'change', content: string) => void>()
 const props = defineProps<{ language: string; value: string; type: SFCType }>()
 
@@ -12,7 +14,16 @@ const { onChange, setContent } = useMonaco(target, {
   code: props.value,
 }, props.type)
 
-watch(() => props.value, () => setContent(props.value))
+shouldUpdate(() => {
+  collaboration.suppressContentEvent = true
+  setTimeout(() => {
+    setContent(props.value)
+    setTimeout(() => {
+      collaboration.suppressContentEvent = false
+    }, 50)
+  })
+})
+
 onChange(content => emit('change', content))
 emit('change', props.value)
 </script>
