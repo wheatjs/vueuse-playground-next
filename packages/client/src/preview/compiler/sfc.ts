@@ -2,7 +2,8 @@ import { SFCDescriptor, BindingMetadata } from '@vue/compiler-sfc'
 import * as defaultCompiler from '@vue/compiler-sfc'
 import { ref } from 'vue'
 import { generateStyles } from './windicss'
-import { playground as store, File } from '~/store'
+import { fs } from '~/store'
+import { SFCFile } from '~/services/files'
 
 export const MAIN_FILE = 'App.vue'
 export const COMP_IDENTIFIER = '__sfc__'
@@ -38,25 +39,25 @@ export function resetVersion() {
   vueRuntimeUrl.value = defaultVueUrl
 }
 
-export async function compileFile({ filename, code, compiled }: File) {
-  if (!code.trim()) {
-    store.errors = []
+export async function compileFile({ filename, compiled, content }: SFCFile) {
+  if (!content.trim()) {
+    fs.errors = []
     return
   }
 
   if (!filename.endsWith('.vue')) {
-    compiled.js = compiled.ssr = code
-    store.errors = []
+    compiled.js = compiled.ssr = content
+    fs.errors = []
     return
   }
 
   const id = await hashId(filename)
-  const { errors, descriptor } = SFCCompiler.parse(code, {
+  const { errors, descriptor } = SFCCompiler.parse(content, {
     filename,
     sourceMap: true,
   })
   if (errors.length) {
-    store.errors = errors
+    fs.errors = errors
     return
   }
 
@@ -66,7 +67,7 @@ export async function compileFile({ filename, code, compiled }: File) {
     || descriptor.styles.some(s => s.lang)
     || (descriptor.template && descriptor.template.lang)
   ) {
-    store.errors = [
+    fs.errors = [
       'lang="x" pre-processors are not supported in the in-browser playground.',
     ]
     return
@@ -147,7 +148,7 @@ export async function compileFile({ filename, code, compiled }: File) {
 
   for (const style of descriptor.styles) {
     if (style.module) {
-      store.errors = ['<style module> is not supported in the playground.']
+      fs.errors = ['<style module> is not supported in the playground.']
       return
     }
 
@@ -162,7 +163,7 @@ export async function compileFile({ filename, code, compiled }: File) {
       // postcss uses pathToFileURL which isn't polyfilled in the browser
       // ignore these errors for now
       if (!styleResult.errors[0].message.includes('pathToFileURL'))
-        store.errors = styleResult.errors
+        fs.errors = styleResult.errors
 
       // proceed even if css compile errors
     }
@@ -176,7 +177,7 @@ export async function compileFile({ filename, code, compiled }: File) {
     compiled.css = '/* No <style> tags present */'
 
   // clear errors
-  store.errors = []
+  fs.errors = []
 }
 
 function doCompileScript(
@@ -209,7 +210,7 @@ function doCompileScript(
       return [code, compiledScript.bindings]
     }
     catch (e) {
-      store.errors = [e]
+      // store.errors = [e]
     }
   }
   else {
@@ -237,7 +238,7 @@ function doCompileTemplate(
     },
   })
   if (templateResult.errors.length) {
-    store.errors = templateResult.errors
+    // store.errors = templateResult.errors
     return
   }
 

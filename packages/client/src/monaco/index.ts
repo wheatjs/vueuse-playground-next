@@ -40,10 +40,12 @@ const setup = createSingletonPromise(async() => {
         { default: EditorWorker },
         { default: HtmlWorker },
         { default: TsWorker },
+        { default: CssWorker },
       ] = await Promise.all([
         import('monaco-editor/esm/vs/editor/editor.worker?worker'),
         import('./languages/html/html.worker?worker'),
         import('monaco-editor/esm/vs/language/typescript/ts.worker?worker'),
+        import('monaco-editor/esm/vs/language/css/css.worker?worker'),
       ])
 
       // @ts-expect-error
@@ -53,6 +55,9 @@ const setup = createSingletonPromise(async() => {
             return new HtmlWorker()
           if (label === 'typescript' || label === 'javascript')
             return new TsWorker()
+          if (label === 'css')
+            return new CssWorker()
+
           return new EditorWorker()
         },
       }

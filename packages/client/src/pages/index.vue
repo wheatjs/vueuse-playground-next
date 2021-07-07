@@ -1,17 +1,42 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import { Hako } from 'vue-hako'
-import Container from '~/components/ui/Container.vue'
-import { playground, shouldUpdate } from '~/store'
+import * as monaco from 'monaco-editor'
+import { fs, filesystem } from '~/store/files'
+import { SFCFile } from '~/services/files'
 
-const script = ref('')
-const template = ref('')
+const defaultScriptModel = monaco.editor.createModel('')
+const defaultTemplateModel = monaco.editor.createModel('')
+const defaultStyleModel = monaco.editor.createModel('')
 
-shouldUpdate(() => {
-  template.value = playground.currentFile.template
-  script.value = playground.currentFile.script
+const scriptModel = computed(() => {
+  const currrentFile = filesystem.files[fs.currentFilename]
+
+  if (currrentFile && currrentFile instanceof SFCFile && currrentFile.script)
+    return currrentFile.script.model
+
+  return defaultScriptModel
 })
+
+const templateModel = computed(() => {
+  const currrentFile = filesystem.files[fs.currentFilename]
+
+  if (currrentFile && currrentFile instanceof SFCFile && currrentFile.template)
+    return currrentFile.template.model
+
+  return defaultTemplateModel
+})
+
+const styleModel = computed(() => {
+  const currrentFile = filesystem.files[fs.currentFilename]
+
+  if (currrentFile && currrentFile instanceof SFCFile && currrentFile.style)
+    return currrentFile.style.model
+
+  return defaultTemplateModel
+})
+
 </script>
 
 <template>
@@ -19,56 +44,23 @@ shouldUpdate(() => {
     <Splitpanes class="default-theme">
       <Pane>
         <div h="full" flex="~ col">
-          <EditorTabs></EditorTabs>
+          <EditorTabs />
           <Splitpanes horizontal>
             <Pane>
-              <Container class="rounded-t-none">
-                <template #title>
-                  <mdi-code-braces />
-                  <span>
-                    <template v-if="playground.activeFilename === '__APP__'">
-                      Main
-                    </template>
-                    <template v-else>
-                      Script Setup
-                    </template>
-                  </span>
-                </template>
-                <template #overflow>
-                  <Presence />
-                </template>
-                <Editor
-                  language="javascript"
-                  :value="script"
-                  type="script"
-                  @change="(content) => playground.currentFile.script = content"
-                />
+              <Container>
+                <Editor :model="scriptModel" />
               </Container>
             </Pane>
             <Pane>
               <Container>
-                <template #title>
-                  <carbon-settings v-if="playground.activeFilename === '__APP__'" />
-                  <mdi-code-tags v-else />
-                  <span>
-                    <template v-if="playground.activeFilename === '__APP__'">
-                      App Settings
-                    </template>
-                    <template v-else>
-                      Template
-                    </template>
-                  </span>
-                </template>
-
-                <Editor
-                  v-show="playground.activeFilename !== '__APP__'"
-                  language="html"
-                  :value="template"
-                  type="template"
-                  @change="(content) => playground.currentFile.template = content"
-                />
+                <Editor :model="templateModel" />
               </Container>
             </Pane>
+            <!-- <Pane>
+              <Container>
+                <Editor :model="styleModel" />
+              </Container>
+            </Pane> -->
           </Splitpanes>
         </div>
       </Pane>
@@ -76,39 +68,14 @@ shouldUpdate(() => {
         <Splitpanes horizontal>
           <Pane>
             <Container>
-              <template #title>
-                <mdi-eye />
-                <span>
-                  Preview
-                </span>
-              </template>
-              <div h="full">
-                <Hako
-                  h="full"
-                  w="full"
-                  :width="100"
-                  :height="100"
-                  :disable-scaling="true"
-                >
-                  <Preview h="full" w="full" />
-                </Hako>
-              </div>
+              <!-- <pre>{{ fs }}</pre> -->
+              <Preview />
             </Container>
           </Pane>
           <Pane size="25">
             <Container>
-              <template #title>
-                <mdi-console />
-                <span>
-                  Console
-                </span>
-              </template>
-              <div h="full" overflow="auto">
-                <pre>{{ script }}</pre>
-                <pre>{{ template }}</pre>
-                <!-- <pre>
-                  {{ playground }}
-                </pre> -->
+              <div overflow="auto" w="full" h="full">
+                <pre>{{ fs }}</pre>
               </div>
             </Container>
           </Pane>

@@ -4,7 +4,7 @@ import type { WatchStopHandle } from 'vue'
 import srcdoc from '~/preview/template.html?raw'
 import { PreviewProxy } from '~/preview/PreviewProxy'
 import { MAIN_FILE, vueRuntimeUrl, compileModulesForPreview, compileFile } from '~/preview/compiler'
-import { usePackages, playground as store } from '~/store'
+import { usePackages, fs as store, shouldUpdatePreview } from '~/store'
 import { isDark } from '~/hooks'
 
 const container = ref()
@@ -143,11 +143,16 @@ function createSandbox() {
   })
   sandbox.addEventListener('load', () => {
     proxy.handle_links()
-    stopUpdateWatcher = watchEffect(updatePreview)
+    // stopUpdateWatcher = watchEffect(updatePreview)
+
+    ;({ off: stopUpdateWatcher } = shouldUpdatePreview(() => {
+      updatePreview()
+    }))
   })
 }
 async function updatePreview() {
   // console.clear()
+  // console.log('Doing preivew update', store.files)
   runtimeError.value = null
   runtimeWarning.value = null
   try {
@@ -166,9 +171,12 @@ async function updatePreview() {
         document.getElementById('app').innerHTML = ''
       }
       document.getElementById('__sfc-styles').innerHTML = window.__css__
+
+
       const app = window.__app__ = _createApp(__modules__["${MAIN_FILE}"].default)
       app.config.errorHandler = e => console.error(e)
-      app.mount('#app')`.trim(),
+      app.mount('#app')
+      `.trim(),
     ])
   }
   catch (e) {

@@ -21,10 +21,14 @@ html.dark {
 }
 
 .dark ::-webkit-scrollbar {
-  @apply bg-dark-900;
+  @apply bg-dark-800;
 }
 
 .dark ::-webkit-scrollbar-thumb {
+  @apply bg-dark-900;
+}
+
+.dark ::-webkit-scrollbar-corner { 
   @apply bg-dark-800;
 }
 

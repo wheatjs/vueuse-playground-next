@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
-import { playground, PROTECTED_FILES, deleteFile, openFile } from '~/store'
+// import { playground, PROTECTED_FILES, deleteFile, openFile } from '~/store'
+import { filesystem, fs } from '~/store'
 
 const props = defineProps<{ name: string; noIcon?: boolean }>()
-const canDelete = computed(() => !PROTECTED_FILES.includes(props.name))
-const isActive = computed(() => playground.activeFilename === props.name)
+const canDelete = computed(() => !fs.files.find(({ filename }) => filename === props.name)?.isProtected)
+const isActive = computed(() => fs.currentFilename === props.name)
+
 const setActive = () => {
-  playground.activeFilename = props.name
+  filesystem.currentFile = props.name
 }
 
 const removeFile = () => {
-  deleteFile(props.name)
+  console.log('Try to remove file')
+  filesystem.deleteFile(props.name)
 }
 
 </script>
@@ -25,13 +28,13 @@ const removeFile = () => {
     cursor="pointer"
     :draggable="false"
     select="none"
-    bg="dark:(dark-500) light-200"
+    bg="dark:(dark-500 hover:dark-300) light-200"
     border="r-1 dark:(dark-300)"
     :class="{
       'pr-2': !canDelete,
       '!dark:(bg-green-500 bg-opacity-10)': isActive
     }"
-    @click="openFile(name)"
+    @click="setActive"
   >
     <template v-if="!noIcon">
       <template v-if="$slots.icon">
@@ -47,6 +50,7 @@ const removeFile = () => {
       text="dark:(light-900 opacity-70)"
       :class="{
         'ml-2': !noIcon,
+        'pr-1': !canDelete,
         '!dark:(text-green-300)': isActive
       }"
     >
@@ -58,7 +62,7 @@ const removeFile = () => {
       :class="{
         '!dark:(text-green-100 text-opacity-0 hover:text-opacity-10)': isActive
       }"
-      @click="removeFile()"
+      @click.stop="removeFile()"
     >
       <carbon-close
         :class="{

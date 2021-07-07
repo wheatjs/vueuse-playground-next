@@ -1,31 +1,13 @@
 <script setup lang="ts">
-import type { SFCType } from '@playground/shared'
-import { defineProps, defineEmit, ref, watch } from 'vue'
-import { shouldUpdate, useCollaboration } from '~/store'
+import { ref, defineProps, toRefs } from 'vue'
+import { editor as Editor } from 'monaco-editor'
 import { useMonaco } from '~/monaco/useMonaco'
 
-const collaboration = useCollaboration()
-const emit = defineEmit<(e: 'change', content: string) => void>()
-const props = defineProps<{ language: string; value: string; type: SFCType }>()
+const props = defineProps<{ model: Editor.ITextModel }>()
+const { model } = toRefs(props)
 
 const target = ref()
-const { onChange, setContent } = useMonaco(target, {
-  language: props.language,
-  code: props.value,
-}, props.type)
-
-shouldUpdate(() => {
-  collaboration.suppressContentEvent = true
-  setTimeout(() => {
-    setContent(props.value)
-    setTimeout(() => {
-      collaboration.suppressContentEvent = false
-    }, 50)
-  })
-})
-
-onChange(content => emit('change', content))
-emit('change', props.value)
+useMonaco(target, { model }, 'script')
 </script>
 
 <template>

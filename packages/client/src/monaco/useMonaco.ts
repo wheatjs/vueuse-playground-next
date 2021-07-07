@@ -1,24 +1,29 @@
 import { watch, Ref, unref, ref } from 'vue'
-import { until, createEventHook, tryOnUnmounted } from '@vueuse/core'
+import { until, createEventHook, tryOnUnmounted, MaybeRef } from '@vueuse/core'
 import darkTheme from 'theme-vitesse/themes/vitesse-dark.json'
 import lightTheme from 'theme-vitesse/themes/vitesse-light.json'
-import type { editor as Editor } from 'monaco-editor'
+import type { editor as Editor, IDisposable } from 'monaco-editor'
 import { SFCType } from '@playground/shared'
 import { isDark } from '~/hooks'
 import { editorPlugins } from '~/monaco/plugins/editor'
 import { editors } from '~/store/editors'
 import setupMonaco from '~/monaco'
 
-export function useMonaco(target: Ref, options: any, type: SFCType) {
+export interface UseMonacoOptions {
+  model: MaybeRef<Editor.ITextModel>
+}
+
+export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType) {
   const changeEventHook = createEventHook<string>()
   const isSetup = ref(false)
   let editor: Editor.IStandaloneCodeEditor
 
-  const setContent = async(content: string) => {
+  watch(() => unref(options.model), async() => {
     await until(isSetup).toBeTruthy()
+
     if (editor)
-      editor.setValue(content)
-  }
+      editor.setModel(unref(options.model))
+  }, { immediate: true })
 
   const init = async() => {
     const { monaco } = await setupMonaco()
@@ -31,18 +36,7 @@ export function useMonaco(target: Ref, options: any, type: SFCType) {
       if (!el)
         return
 
-      const extension = () => {
-        if (options.language === 'typescript')
-          return 'ts'
-        else if (options.language === 'javascript')
-          return 'js'
-        else if (options.language === 'html')
-          return 'html'
-      }
-
-      const model = monaco.editor.createModel(options.code, options.language, monaco.Uri.parse(`file:///root/${Date.now()}.${extension()}`))
       editor = monaco.editor.create(el, {
-        model,
         tabSize: 2,
         insertSpaces: true,
         autoClosingQuotes: 'always',
@@ -64,16 +58,26 @@ export function useMonaco(target: Ref, options: any, type: SFCType) {
           monaco.editor.setTheme('vitesse-light')
       }, { immediate: true })
 
-      const plugins = editorPlugins.filter(({ language }) => language === options.language)
+      let modelDisposables: IDisposable[] = []
 
-      plugins.forEach((p) => {
-        if (p.init)
-          p.init(editor)
-      })
+      editor.onDidChangeModel(() => {
+        modelDisposables.forEach(x => x.dispose())
+        modelDisposables = []
 
-      editor.getModel()?.onDidChangeContent(() => {
-        changeEventHook.trigger(editor.getValue())
-        plugins.forEach(({ onContentChanged }) => onContentChanged(editor))
+        const model = editor.getModel()
+
+        if (model) {
+          const plugins = editorPlugins.filter(({ language }) => language === model.getModeId())
+
+          plugins.forEach((p) => {
+            if (p.init)
+              p.init(editor)
+          })
+          modelDisposables.push(model.onDidChangeContent(() => {
+            changeEventHook.trigger(editor.getValue())
+            plugins.forEach(({ onContentChanged }) => onContentChanged(editor))
+          }))
+        }
       })
 
       editors.push({ type, editor })
@@ -89,6 +93,5 @@ export function useMonaco(target: Ref, options: any, type: SFCType) {
 
   return {
     onChange: changeEventHook.on,
-    setContent,
   }
 }

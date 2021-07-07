@@ -6,12 +6,16 @@ import {
 } from '@vue/compiler-sfc'
 import { babelParserDefaultPlugins } from '@vue/shared'
 import { ExportSpecifier, Identifier, Node, ObjectProperty } from '@babel/types'
-import { playground as store, File } from '~/store'
+import { filesystem, fs } from '~/store'
+import { SFCFile } from '~/services/files'
 
 const MAIN_FILE = 'App.vue'
 
 export function compileModulesForPreview() {
-  return processFile(store.files[MAIN_FILE]).reverse()
+  if (filesystem.files[MAIN_FILE] instanceof SFCFile)
+    return processFile(filesystem.files[MAIN_FILE] as SFCFile).reverse()
+
+  return []
 }
 
 const modulesKey = '__modules__'
@@ -23,7 +27,7 @@ const isStaticProperty = (node: Node): node is ObjectProperty =>
   node.type === 'ObjectProperty' && !node.computed
 
 // similar logic with Vite's SSR transform, except this is targeting the browser
-function processFile(file: File, seen = new Set<File>()) {
+function processFile(file: SFCFile, seen = new Set<SFCFile>()) {
   if (seen.has(file))
     return []
 
@@ -46,7 +50,7 @@ function processFile(file: File, seen = new Set<File>()) {
 
   function defineImport(node: Node, source: string) {
     const filename = source.replace(/^\.\/+/, '')
-    if (!(filename in store.files))
+    if (!(filename in filesystem.files))
       throw new Error(`File "${filename}" does not exist.`)
 
     if (importedFiles.has(filename))
@@ -221,7 +225,7 @@ function processFile(file: File, seen = new Set<File>()) {
   const processed = [s.toString()]
   if (importedFiles.size) {
     for (const imported of importedFiles)
-      processed.push(...processFile(store.files[imported], seen))
+      processed.push(...processFile(filesystem.files[imported], seen))
   }
 
   // return a list of files to further process
