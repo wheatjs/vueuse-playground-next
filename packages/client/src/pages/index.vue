@@ -5,6 +5,7 @@ import { Hako } from 'vue-hako'
 import * as monaco from 'monaco-editor'
 import { fs, filesystem } from '~/store/files'
 import { SFCFile } from '~/services/files'
+import ContainerTitle from '~/components/ui/ContainerTitle.vue'
 
 const defaultScriptModel = monaco.editor.createModel('')
 const defaultTemplateModel = monaco.editor.createModel('')
@@ -47,12 +48,18 @@ const styleModel = computed(() => {
           <EditorTabs />
           <Splitpanes horizontal>
             <Pane>
-              <Container>
+              <Container rounded="t-none">
+                <template #title>
+                  <ContainerTitle type="sfc:script" />
+                </template>
                 <Editor :model="scriptModel" />
               </Container>
             </Pane>
             <Pane>
               <Container>
+                <template #title>
+                  <ContainerTitle type="sfc:template" />
+                </template>
                 <Editor :model="templateModel" />
               </Container>
             </Pane>
@@ -68,14 +75,19 @@ const styleModel = computed(() => {
         <Splitpanes horizontal>
           <Pane>
             <Container>
-              <!-- <pre>{{ fs }}</pre> -->
+              <template #title>
+                <ContainerTitle type="preview" />
+              </template>
               <Preview />
             </Container>
           </Pane>
           <Pane size="25">
             <Container>
+              <template #title>
+                <ContainerTitle type="console" />
+              </template>
               <div overflow="auto" w="full" h="full">
-                <pre>{{ fs }}</pre>
+                <!-- <pre>{{ fs }}</pre> -->
               </div>
             </Container>
           </Pane>

@@ -29,7 +29,7 @@ function doDecorations(editor: Editor.IStandaloneCodeEditor) {
   if (ast.body) {
     for (const node of ast.body) {
       if (node.type === 'ImportDeclaration' && node.source.type === 'Literal' && node.source.value !== '✖' && node.source.value.length > 0) {
-        if (!installed.includes(node.source.value)) {
+        if (!installed.includes(node.source.value) && !(node.source.value as string).startsWith('.') && node.source.value !== 'vue') {
           const startPosition = editor.getModel()?.getPositionAt(node.start)
           const endPosition = editor.getModel()?.getPositionAt(node.end)
 

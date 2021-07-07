@@ -3,11 +3,9 @@ import * as monaco from 'monaco-editor'
 import { createSingletonPromise } from '@antfu/utils'
 // import types from '@vue/runtime-dom'
 import { emmetHTML } from 'emmet-monaco-es'
-import { usePackages } from '~/store'
+import vueTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
+import { usePackages, fs } from '~/store'
 /* __imports__ */
-
-// import vueuseTypes from '@vueuse/core/index.d.ts?raw'
-// import vueTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
 
 const setup = createSingletonPromise(async() => {
   monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
@@ -18,20 +16,41 @@ const setup = createSingletonPromise(async() => {
     allowUnusedLabels: true,
     strict: false,
     allowJs: true,
+    noImplicitUseStrict: false,
   })
 
-  const registeredPackages: string[] = []
+  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    diagnosticCodesToIgnore: [6133, 6198],
+  })
+
   const packages = usePackages()
 
-  watch(() => packages.packages, () => {
-    packages.packages
+  watch(() => [fs.filenames, packages.packages], () => {
+    const _packages = packages.packages
       .filter(({ isResolving, types }) => !isResolving && types)
-      .filter(({ name }) => !registeredPackages.includes(name))
-      .forEach(({ name, types }) => {
-        registeredPackages.push(name)
-        monaco.languages.typescript.javascriptDefaults.addExtraLib(`declare module '${name}' { ${types} }`)
+      // .filter(({ name }) => !registeredPackages.includes(name))
+      .map(({ name, types }) => ({ content: `declare module '${name}' { ${types} }` }))
+
+    const _files = fs.filenames
+      .filter(filename => filename.endsWith('.vue'))
+      .map((filename) => {
+        return {
+          content: `declare module './${filename}' {
+          import { DefineComponent } from 'vue'
+          const component: DefineComponent<{}, {}, any>
+          export default component
+        }`,
+        }
       })
-  })
+
+    monaco.languages.typescript.javascriptDefaults.setExtraLibs([
+      ..._packages,
+      ..._files,
+      {
+        content: `declare module 'vue' { ${vueTypes} }`,
+      },
+    ])
+  }, { immediate: true })
 
   await Promise.all([
     // load workers

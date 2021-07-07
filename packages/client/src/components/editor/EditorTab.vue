@@ -3,19 +3,12 @@ import { defineProps, computed } from 'vue'
 // import { playground, PROTECTED_FILES, deleteFile, openFile } from '~/store'
 import { filesystem, fs } from '~/store'
 
-const props = defineProps<{ name: string; noIcon?: boolean }>()
-const canDelete = computed(() => !fs.files.find(({ filename }) => filename === props.name)?.isProtected)
+const props = defineProps<{ name: string; noIcon?: boolean; isProtected?: boolean }>()
+const canDelete = computed(() => !fs.files.find(({ filename }) => filename === props.name)?.isProtected && !props.isProtected)
 const isActive = computed(() => fs.currentFilename === props.name)
 
-const setActive = () => {
-  filesystem.currentFile = props.name
-}
-
-const removeFile = () => {
-  console.log('Try to remove file')
-  filesystem.deleteFile(props.name)
-}
-
+const setActive = () => filesystem.currentFile = props.name
+const removeFile = () => filesystem.deleteFile(props.name)
 </script>
 
 <template>

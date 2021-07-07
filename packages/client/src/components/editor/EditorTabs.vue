@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
+import { getExtensionFromFilename } from '@playground/shared'
 import Draggable from 'vuedraggable'
-import { fs, filesystem } from '~/store'
+import { fs, filesystem, SUPPORTED_EXTENSIONS } from '~/store'
 import { SFCFile } from '~/services/files'
 // import { playground, createFile, File, VALID_EXTENSIONS } from '~/store'
 
@@ -17,10 +18,6 @@ const isValidFile = computed(() => {
   return true
 })
 
-// const files = computed(() => {
-//   return Object.values(fs.files)
-// })
-
 const doAddFile = () => {
   isAddingFile.value = true
   setTimeout(() => {
@@ -31,7 +28,9 @@ const doAddFile = () => {
 
 const addFile = (name: string) => {
   if (name.length > 0) {
-    name = name.endsWith('.vue') ? name : `${name}.vue`
+    if (!SUPPORTED_EXTENSIONS.includes(getExtensionFromFilename(name)))
+      name = `${name}.vue`
+
     filesystem.createFile(new SFCFile({ filename: name }))
     isAddingFile.value = false
     filename.value = ''
@@ -63,7 +62,7 @@ onClickOutside(target, () => {
   >
     <Draggable v-model="fs.files" :component-data="{ 'onWheel': onScroll, class: 'flex h-full overflow-x-auto overflow-y-hidden small-scrollbar' }" item-key="filename">
       <template #header>
-        <EditorTab no-icon name="__APP__">
+        <EditorTab no-icon name="__APP__" :is-protected="true">
           <carbon-application />
         </EditorTab>
       </template>

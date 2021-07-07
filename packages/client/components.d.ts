@@ -32,6 +32,7 @@ declare module 'vue' {
     RadioGroup: typeof import('./src/components/ui/Radio/RadioGroup.vue')['default']
     RadioGroupOption: typeof import('./src/components/ui/Radio/RadioGroupOption.vue')['default']
     Textfield: typeof import('./src/components/ui/Textfield/Textfield.vue')['default']
+    ContainerTitle: typeof import('./src/components/ui/ContainerTitle.vue')['default']
     CarbonNotebook: typeof import('virtual:vite-icons/carbon/notebook')['default']
     CarbonBox: typeof import('virtual:vite-icons/carbon/box')['default']
     CarbonShare: typeof import('virtual:vite-icons/carbon/share')['default']
@@ -47,6 +48,11 @@ declare module 'vue' {
     VscodeIconsDefaultFile: typeof import('virtual:vite-icons/vscode-icons/default-file')['default']
     CarbonAdd: typeof import('virtual:vite-icons/carbon/add')['default']
     CarbonClose: typeof import('virtual:vite-icons/carbon/close')['default']
+    MdiEye: typeof import('virtual:vite-icons/mdi/eye')['default']
+    MdiConsole: typeof import('virtual:vite-icons/mdi/console')['default']
+    MdiCodeBraces: typeof import('virtual:vite-icons/mdi/code-braces')['default']
+    MdiCodeTags: typeof import('virtual:vite-icons/mdi/code-tags')['default']
+    MdiLanguageCss3: typeof import('virtual:vite-icons/mdi/language-css3')['default']
   }
 }
 

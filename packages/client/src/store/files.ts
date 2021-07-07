@@ -10,17 +10,20 @@ export interface FSFile {
   compiled: any
 }
 
+export const SUPPORTED_EXTENSIONS = ['vue', 'css', 'json', 'js']
+
 export const shouldUpdatePreviewHook = createEventHook<void>()
 
 /**
  * Although we can't use reactivity directly on our virtual filesystem,
  * we can "proxy" our reactive object to make some things a little easier
  */
-export const fs = reactive<{ files: FSFile[]; currentFilename: string; errors: (Error | string)[]; runtimeErrors: (Error | string)[] }>({
+export const fs = reactive<{ files: FSFile[]; currentFilename: string; errors: (Error | string)[]; runtimeErrors: (Error | string)[]; filenames: string[] }>({
   files: [],
   currentFilename: '',
   errors: [],
   runtimeErrors: [],
+  filenames: [],
 })
 
 /**
@@ -39,11 +42,6 @@ class Filesystem {
     'App.vue': new SFCFile({
       filename: 'App.vue',
       isProtected: true,
-      onUpdate: filename => this.onUpdate(filename),
-    }),
-    'App2.vue': new SFCFile({
-      filename: 'App2.vue',
-      isProtected: false,
       onUpdate: filename => this.onUpdate(filename),
     }),
   }
@@ -75,6 +73,7 @@ class Filesystem {
     file.onUpdate = () => this.onUpdate(file.filename)
     this.files[file.filename] = file
     this.onUpdate(file.filename)
+    fs.filenames = Object.keys(this.files)
   }
 
   public deleteFile(filename: string) {
@@ -82,8 +81,7 @@ class Filesystem {
     this.currentFilename = fs.files[newIndex].filename
     delete this.files[filename]
     this.onUpdate()
-    // setTimeout(() => {
-    // }, 10)
+    fs.filenames = Object.keys(this.files)
   }
 
   public get currentFile(): BaseFile {

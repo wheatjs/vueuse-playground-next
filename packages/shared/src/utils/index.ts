@@ -15,3 +15,8 @@ export function insertAt(source: string, index: number, text: string) {
 export function deleteAt(source: string, index: number, length: number) {
   return source.substr(0, index) + source.substr(index + length)
 }
+
+export function getExtensionFromFilename(name: string) {
+  const split = name.split('.')
+  return split[split.length - 1]
+}
