@@ -90,7 +90,12 @@
 
 .default-theme.splitpanes--vertical>.splitpanes__splitter,
 .default-theme .splitpanes--vertical>.splitpanes__splitter {
-  @apply w-3;
+  @apply w-3 bg-white overflow-hidden;
+}
+
+.dark .default-theme.splitpanes--vertical>.splitpanes__splitter,
+.dark .default-theme .splitpanes--vertical>.splitpanes__splitter {
+  @apply w-3 bg-dark-900;
 }
 
 .default-theme.splitpanes--vertical>.splitpanes__splitter:after,
@@ -114,7 +119,12 @@
 
 .default-theme.splitpanes--horizontal>.splitpanes__splitter,
 .default-theme .splitpanes--horizontal>.splitpanes__splitter {
-  @apply h-3;
+  @apply h-3 bg-white overflow-hidden;
+}
+
+.dark .default-theme.splitpanes--horizontal>.splitpanes__splitter,
+.dark .default-theme .splitpanes--horizontal>.splitpanes__splitter {
+  @apply bg-dark-900;
 }
 
 .default-theme.splitpanes--horizontal>.splitpanes__splitter:after,

@@ -1,7 +1,7 @@
 html,
 body,
 #app {
-  @apply h-full p-0 m-0 overflow-hidden;
+  /* @apply h-full p-0 m-0; */
 }
 
 html.dark {
@@ -48,6 +48,13 @@ html.dark {
 
 .editor-windicss-color-block-dark {
   border: 1px solid #eeeeee;
+}
+
+.monaco-editor, 
+.monaco-editor .inputarea.ime-input,
+.monaco-scrollable-element,
+.monaco-editor .margin {
+  @apply !rounded-b;
 }
 
 .editor-packages-install {
@@ -100,4 +107,14 @@ html.dark {
   pointer-events: auto;
   opacity: 0.3;
   @apply rounded-sm;
+}
+
+/* .monaco-editor {
+  transform: translate(0, 0);
+} */
+
+.suggest-widget {
+  transform: translate(0, 0);
+  z-index: 50000 !important;
+
 }

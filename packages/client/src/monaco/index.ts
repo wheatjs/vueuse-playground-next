@@ -3,8 +3,17 @@ import * as monaco from 'monaco-editor'
 import { createSingletonPromise } from '@antfu/utils'
 // import types from '@vue/runtime-dom'
 import { emmetHTML } from 'emmet-monaco-es'
-import vueTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
+
+import vueTypes from 'vue/dist/vue.d.ts?raw'
+import vueSharedTypes from '@vue/shared/dist/shared.d.ts?raw'
+import vueCompilerDomTypes from '@vue/compiler-dom/dist/compiler-dom.d.ts?raw'
+import vueCompilerCoreTypes from '@vue/compiler-core/dist/compiler-core.d.ts?raw'
+import vueRuntimeDomTypes from '@vue/runtime-dom/dist/runtime-dom.d.ts?raw'
+import vueRuntimeCoreTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
+import vueReactivityTypes from '@vue/reactivity/dist/reactivity.d.ts?raw'
+import localShims from '../shims-vue.d.ts?raw'
 import { usePackages, fs } from '~/store'
+
 /* __imports__ */
 
 const setup = createSingletonPromise(async() => {
@@ -13,22 +22,37 @@ const setup = createSingletonPromise(async() => {
     noUnusedLocals: false,
     noUnusedParameters: false,
     allowUnreachableCode: true,
+    moduleResolution: 2,
     allowUnusedLabels: true,
     strict: false,
     allowJs: true,
+    importHelpers: true,
     noImplicitUseStrict: false,
   })
 
   monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    // Ignore unused variable warnings
     diagnosticCodesToIgnore: [6133, 6198],
   })
+
+  const builtinLibs = [
+    { content: `declare module '@vue/shared' { ${vueSharedTypes} }` },
+    // { content: `declare module '@vue/compiler-core' { ${vueCompilerCoreTypes} }` },
+    // { content: `declare module '@vue/compiler-dom' { ${vueCompilerDomTypes} }` },
+    { content: `declare module '@vue/runtime-core' { ${vueRuntimeCoreTypes} }` },
+    { content: `declare module '@vue/runtime-dom' { ${vueRuntimeDomTypes} }` },
+    { content: `declare module '@vue/reactivity' { ${vueReactivityTypes} }` },
+    { content: `declare module 'vue' { ${vueTypes} }` },
+    { content: localShims },
+  ]
+
+  monaco.languages.typescript.javascriptDefaults.setExtraLibs([...builtinLibs])
 
   const packages = usePackages()
 
   watch(() => [fs.filenames, packages.packages], () => {
     const _packages = packages.packages
       .filter(({ isResolving, types }) => !isResolving && types)
-      // .filter(({ name }) => !registeredPackages.includes(name))
       .map(({ name, types }) => ({ content: `declare module '${name}' { ${types} }` }))
 
     const _files = fs.filenames
@@ -44,11 +68,9 @@ const setup = createSingletonPromise(async() => {
       })
 
     monaco.languages.typescript.javascriptDefaults.setExtraLibs([
+      ...builtinLibs,
       ..._packages,
       ..._files,
-      {
-        content: `declare module 'vue' { ${vueTypes} }`,
-      },
     ])
   }, { immediate: true })
 

@@ -9,8 +9,8 @@
   <main h="full" m="l-18">
     <router-view />
   </main>
-  <!-- <Share />
+  <Share />
   <Download />
-  <Packages />
-  <Collaboration /> -->
+  <!-- <Packages /> -->
+  <!-- <Collaboration /> -->
 </template>

@@ -10,8 +10,11 @@
     "client:build": "pnpm -C ./packages/client run build",
     "client:serve": "pnpm -C ./packages/client run serve",
     "server:dev": "pnpm -C ./packages/server run dev",
-    "server:build": "pnpm -C ./packages/client run build",
-    "server:serve": "pnpm -C ./packages/server run serve"
+    "server:build": "pnpm -C ./packages/server run build",
+    "server:serve": "pnpm -C ./packages/server run serve",
+    "types-server:dev": "pnpm -C ./packages/types-server run dev",
+    "types-server:build": "pnpm -C ./packages/types-server run build",
+    "types-server:serve": "pnpm -C ./packages/types-server run serve"
   },
   "repository": {
     "type": "git",

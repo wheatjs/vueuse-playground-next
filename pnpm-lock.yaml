@@ -1917,8 +1917,8 @@ packages:
   /avvio/7.2.2:
     dependencies:
       archy: 1.0.0
-      debug: 4.3.1
-      fastq: 1.11.0
+      debug: 4.3.2
+      fastq: 1.11.1
       queue-microtask: 1.2.3
     dev: false
     resolution:
@@ -2357,7 +2357,6 @@ packages:
   /debug/4.3.2:
     dependencies:
       ms: 2.1.2
-    dev: true
     engines:
       node: '>=6.0'
     peerDependencies:
@@ -2682,13 +2681,13 @@ packages:
       integrity: sha512-QCOllgZJtaUo9miYBcLChTUaHNjJF3PYs1VidD7AwiEj1kYxKeQTctLAezAOH5ZKRH0g2IgPn6KwB4IT8iRpvA==
   /esbuild-node-loader/0.1.1:
     dependencies:
-      esbuild: 0.12.9
+      esbuild: 0.12.15
     dev: false
     resolution:
       integrity: sha512-n24xYzMfKmPupUZgs0QYBr52HUSh1M1vDtBfkEVa6pdENqo5+U5WP+zaj4Iw2MinuYk1axLW8+NVutrBCkrdmA==
   /esbuild-register/2.6.0:
     dependencies:
-      esbuild: 0.12.9
+      esbuild: 0.12.15
       jsonc-parser: 3.0.0
     dev: false
     resolution:
@@ -2699,7 +2698,14 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha512-iaiZZ9vUF5wJV8ob1tl+5aJTrwDczlvGP0JoMmnpC2B0ppiMCu8n8gmy5ZTGl5bcG081XBVn+U+jP+mPFm5T5Q==
+  /esbuild/0.12.15:
+    dev: false
+    hasBin: true
+    requiresBuild: true
+    resolution:
+      integrity: sha512-72V4JNd2+48eOVCXx49xoSWHgC3/cCy96e7mbXKY+WOWghN00cCmlGnwVLRhRHorvv0dgCyuMYBZlM2xDM5OQw==
   /esbuild/0.12.9:
+    dev: true
     hasBin: true
     requiresBuild: true
     resolution:
@@ -3017,7 +3023,7 @@ packages:
   /esno/0.7.3:
     dependencies:
       cross-spawn: 7.0.3
-      esbuild: 0.12.9
+      esbuild: 0.12.15
       esbuild-node-loader: 0.1.1
       esbuild-register: 2.6.0
     dev: false
@@ -3258,8 +3264,15 @@ packages:
   /fastq/1.11.0:
     dependencies:
       reusify: 1.0.4
+    dev: true
     resolution:
       integrity: sha512-7Eczs8gIPDrVzT+EksYBcupqMyxSHXXrHOLRRxU2/DicV8789MRBRR8+Hc2uWzUupOs4YS4JzBmBxjjCVBxD/g==
+  /fastq/1.11.1:
+    dependencies:
+      reusify: 1.0.4
+    dev: false
+    resolution:
+      integrity: sha512-HOnr8Mc60eNYl1gzwp6r5RoUyAn5/glBolUzP/Ez6IFVPMPirxn/9phgL6zhOtaTy7ISwPvQ+wT+hfcRZh/bzw==
   /faye-websocket/0.11.3:
     dependencies:
       websocket-driver: 0.7.4

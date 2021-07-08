@@ -55,14 +55,18 @@ onClickOutside(target, () => {
 <template>
   <div
     position="relative"
-    border="1 light-900 dark:(dark-400 b-dark-300) rounded-t"
+    border="1 light-900 dark:dark-400 rounded-t"
     bg="dark:dark-500"
     h="8"
     flex="shrink-0"
   >
-    <Draggable v-model="fs.files" :component-data="{ 'onWheel': onScroll, class: 'flex h-full overflow-x-auto overflow-y-hidden small-scrollbar' }" item-key="filename">
+    <Draggable
+      v-model="fs.files"
+      :component-data="{ 'onWheel': onScroll, class: 'flex h-full overflow-x-auto overflow-y-hidden small-scrollbar' }"
+      item-key="filename"
+    >
       <template #header>
-        <EditorTab no-icon name="__APP__" :is-protected="true">
+        <EditorTab class="rounded-tl" no-icon name="__APP__" :is-protected="true">
           <carbon-application />
         </EditorTab>
       </template>
