@@ -6,6 +6,7 @@ import * as monaco from 'monaco-editor'
 import { fs, filesystem } from '~/store/files'
 import { SFCFile } from '~/services/files'
 import ContainerTitle from '~/components/ui/ContainerTitle.vue'
+import { ScriptFile } from '~/services/files/script'
 
 const defaultScriptModel = monaco.editor.createModel('')
 const defaultTemplateModel = monaco.editor.createModel('')
@@ -14,7 +15,7 @@ const defaultStyleModel = monaco.editor.createModel('')
 const scriptModel = computed(() => {
   const currrentFile = filesystem.files[fs.currentFilename]
 
-  if (currrentFile && currrentFile instanceof SFCFile && currrentFile.script)
+  if (currrentFile && (currrentFile instanceof SFCFile || currrentFile instanceof ScriptFile) && currrentFile.script)
     return currrentFile.script.model
 
   return defaultScriptModel
@@ -22,6 +23,9 @@ const scriptModel = computed(() => {
 
 const templateModel = computed(() => {
   const currrentFile = filesystem.files[fs.currentFilename]
+
+  if (currrentFile && currrentFile instanceof ScriptFile)
+    return null
 
   if (currrentFile && currrentFile instanceof SFCFile && currrentFile.template)
     return currrentFile.template.model
@@ -57,16 +61,20 @@ const styleModel = computed(() => {
                     <Editor :model="scriptModel" />
                   </Container>
                 </Pane>
-                <Pane>
+                <Pane v-if="templateModel !== null && fs.currentFilename !== 'main.js'">
                   <Container>
                     <template #title>
-                      <ContainerTitle type="sfc:template" />
+                      <ContainerTitle v-if="fs.currentFilename !== 'main.js'" type="sfc:template" />
+                      <ContainerTitle v-else type="settings" />
                     </template>
-                    <Editor :model="templateModel" />
+                    <Editor v-if="fs.currentFilename !== 'main.js'" :model="templateModel" />
                   </Container>
                 </Pane>
                 <!-- <Pane>
                   <Container>
+                    <template #title>
+                      <ContainerTitle type="sfc:style" />
+                    </template>
                     <Editor :model="styleModel" />
                   </Container>
                 </Pane> -->
@@ -90,7 +98,8 @@ const styleModel = computed(() => {
                   <ContainerTitle type="console" />
                 </template>
                 <div overflow="auto" w="full" h="full">
-                  <!-- <pre>{{ fs }}</pre> -->
+                  <pre>{{ fs.errors }}</pre>
+                  <pre>{{ fs.runtimeErrors }}</pre>
                 </div>
               </Container>
             </Pane>

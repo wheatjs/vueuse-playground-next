@@ -6,14 +6,26 @@ import {
 } from '@vue/compiler-sfc'
 import { babelParserDefaultPlugins } from '@vue/shared'
 import { ExportSpecifier, Identifier, Node, ObjectProperty } from '@babel/types'
-import { filesystem, fs } from '~/store'
-import { SFCFile } from '~/services/files'
+import { filesystem } from '~/store'
+import { SFCFile, BaseFile } from '~/services/files'
 
 const MAIN_FILE = 'App.vue'
 
 export function compileModulesForPreview() {
-  if (filesystem.files[MAIN_FILE] instanceof SFCFile)
-    return processFile(filesystem.files[MAIN_FILE] as SFCFile).reverse()
+  if (filesystem.files[MAIN_FILE] instanceof SFCFile) {
+    const sfcImports = processFile(filesystem.files[MAIN_FILE] as SFCFile)
+    const mainImports = processFile(filesystem.files['main.js'] as SFCFile)
+
+    const preImports = [sfcImports[0], mainImports[0]]
+    const postImports = new Set([...sfcImports.slice(1), ...mainImports.slice(1)])
+
+    return [
+      ...postImports,
+      ...preImports,
+      // ...processFile().reverse(),
+      // ...processFile(filesystem.files['main.js']).reverse(),
+    ]
+  }
 
   return []
 }
@@ -27,7 +39,7 @@ const isStaticProperty = (node: Node): node is ObjectProperty =>
   node.type === 'ObjectProperty' && !node.computed
 
 // similar logic with Vite's SSR transform, except this is targeting the browser
-function processFile(file: SFCFile, seen = new Set<SFCFile>()) {
+function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
   if (seen.has(file))
     return []
 

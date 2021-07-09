@@ -54,17 +54,17 @@ export async function resolveTypes(metadata: Partial<PackageMetadata>): Promise<
   }
 }
 
-export async function resolvePackage(name: string): Promise<IPackage[] | undefined> {
+export async function resolvePackage(name: string, version?: string, file?: string): Promise<IPackage[] | undefined> {
   const packages: IPackage[] = []
 
   try {
-    const metadata = await resolveMetadata(name)
+    const metadata = await resolveMetadata(version ? `${name}@${version}` : name)
     const types = await resolveTypes(metadata)
 
     packages.push({
       name,
       version: metadata.version,
-      url: metadata.module || metadata.main,
+      url: file || metadata.module || metadata.main,
       types,
     })
 

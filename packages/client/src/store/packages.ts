@@ -18,7 +18,35 @@ interface UsePackagesState {
   results: Partial<PackageSearchItem>[]
 }
 
-const UNPKG_URL = (name: string, url: string) => `https://unpkg.com/${name}/${url}`
+interface PackageOverride {
+  version?: string
+  file?: string
+}
+
+const PACKAGE_OVERRIDES: Record<string, PackageOverride> = {
+  'vue-router': {
+    version: 'next',
+    file: 'dist/vue-router.esm-browser.js',
+  },
+  'pinia': {
+    version: 'next',
+  },
+  'vuetify': {
+    version: 'next',
+  },
+}
+
+const UNPKG_URL = (name: string, url: string, version?: string) => `https://unpkg.com/${version ? `${name}@${version}` : name}/${url}`
+
+const getPackageOverride = (name: string): PackageOverride => {
+  if (name in PACKAGE_OVERRIDES)
+    return PACKAGE_OVERRIDES[name]
+
+  return {
+    version: undefined,
+    file: undefined,
+  }
+}
 
 const addPackageHook = createEventHook<string>()
 const removePackageHook = createEventHook<string>()
@@ -39,7 +67,7 @@ export const usePackages = defineStore({
       return `
         {
           "imports": {
-            ${state.packages.map(({ name, url }) => `"${name}": "${UNPKG_URL(name, url!)}"`).join(',\n')}
+            ${state.packages.map(({ name, url, version }) => `"${name}": "${UNPKG_URL(name, url!, version)}"`).join(',\n')}
           }
         }
       `
@@ -53,8 +81,10 @@ export const usePackages = defineStore({
       if (this.packages.find(p => p.name === name))
         return
 
+      const { version, file } = getPackageOverride(name)
+
       this.packages = [...this.packages, { isResolving: true, name }]
-      const resolved = (await resolvePackage(name))
+      const resolved = (await resolvePackage(name, version, file))
 
       this.packages = [
         // Filter out duplicates

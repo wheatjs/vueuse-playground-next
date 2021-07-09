@@ -2,10 +2,12 @@ import { reactive } from 'vue'
 import { createEventHook } from '@vueuse/core'
 import { BaseFile, SFCFile } from '~/services/files'
 import { compileFile } from '~/preview/compiler'
+import { ScriptFile } from '~/services/files/script'
 
 export interface FSFile {
   filename: string
   isProtected: boolean
+  hide: boolean
   content: string
   compiled: any
 }
@@ -38,7 +40,25 @@ export const fs = reactive<{ files: FSFile[]; currentFilename: string; errors: (
  * each document having an automerge instance and a monaco model.
  */
 class Filesystem {
-  public files: Record<string, BaseFile | SFCFile> = {
+  public files: Record<string, BaseFile | ScriptFile | SFCFile> = {
+    'main.js': new ScriptFile({
+      filename: 'main.js',
+      isProtected: true,
+      hide: true,
+      onUpdate: filename => this.onUpdate(filename),
+      initialScriptContent: `export default {
+  /**
+   * This function can be used to enhance the existing vue
+   * app instance
+   * 
+   * @param {import('vue').App} app - The vue app instance.
+   */
+  enhanceApp(app) {
+    
+  },
+}
+`,
+    }),
     'App.vue': new SFCFile({
       filename: 'App.vue',
       isProtected: true,
@@ -49,21 +69,25 @@ class Filesystem {
   private currentFilename = 'App.vue'
 
   constructor() {
-    this.onUpdate()
+    this.onUpdate('App.vue')
   }
 
   private onUpdate(filename?: string) {
     // Compile the updated file
     if (filename) {
-      compileFile(this.files[filename])
-      setTimeout(() => {
-        shouldUpdatePreviewHook.trigger()
-      }, 0)
+      const file = this.files[filename]
+
+      if (file instanceof SFCFile)
+        compileFile(file)
+
+      setTimeout(() => shouldUpdatePreviewHook.trigger(), 0)
     }
+
     fs.currentFilename = this.currentFilename
     fs.files = Object.values(this.files).map(file => ({
       filename: file.filename,
       content: file.toString(),
+      hide: file.hide,
       isProtected: file.isProtected,
       compiled: 'compiled' in file ? file.compiled : null,
     }))

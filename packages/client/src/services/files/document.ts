@@ -4,6 +4,7 @@ import * as monaco from 'monaco-editor'
 interface DocumentOptions {
   onUpdate?: () => void
   language?: string
+  initialContent?: string
 }
 
 export class Document {
@@ -11,14 +12,15 @@ export class Document {
   // so we use this to ignore the update
   public name: string
   public model: monaco.editor.ITextModel
-  public doc: any = automerge.from({ text: new automerge.Text() })
+  public doc: any
   private onUpdate: any
 
   private shouldIgnoreModelUpdate = false
 
   constructor(name: string, options: DocumentOptions) {
     this.name = name
-    this.model = monaco.editor.createModel('', options.language)
+    this.model = monaco.editor.createModel(options.initialContent || '', options.language)
+    this.doc = automerge.from({ text: new automerge.Text(options.initialContent) })
     this.onUpdate = options.onUpdate
 
     this.model.onDidChangeContent((e) => {

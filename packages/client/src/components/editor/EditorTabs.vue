@@ -4,7 +4,7 @@ import { onClickOutside } from '@vueuse/core'
 import { getExtensionFromFilename } from '@playground/shared'
 import Draggable from 'vuedraggable'
 import { fs, filesystem, SUPPORTED_EXTENSIONS } from '~/store'
-import { SFCFile } from '~/services/files'
+import { ScriptFile, SFCFile } from '~/services/files'
 // import { playground, createFile, File, VALID_EXTENSIONS } from '~/store'
 
 const target = ref<HTMLInputElement>()
@@ -31,7 +31,11 @@ const addFile = (name: string) => {
     if (!SUPPORTED_EXTENSIONS.includes(getExtensionFromFilename(name)))
       name = `${name}.vue`
 
-    filesystem.createFile(new SFCFile({ filename: name }))
+    if (name.endsWith('.vue'))
+      filesystem.createFile(new SFCFile({ filename: name }))
+    else if (name.endsWith('.js'))
+      filesystem.createFile(new ScriptFile({ filename: name }))
+
     isAddingFile.value = false
     filename.value = ''
 
@@ -66,12 +70,12 @@ onClickOutside(target, () => {
       item-key="filename"
     >
       <template #header>
-        <EditorTab class="rounded-tl" no-icon name="__APP__" :is-protected="true">
+        <EditorTab class="rounded-tl" no-icon name="main.js" :is-protected="true">
           <carbon-application />
         </EditorTab>
       </template>
       <template #item="{ element }">
-        <EditorTab :name="element.filename" flex="inline">
+        <EditorTab v-if="!element.hide" :name="element.filename" flex="inline">
           {{ element.filename }}
         </EditorTab>
       </template>

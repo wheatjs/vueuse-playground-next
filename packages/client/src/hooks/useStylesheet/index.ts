@@ -8,7 +8,7 @@ export function useStyleSheet(name: string) {
   const el: HTMLStyleElement = document.createElement('style')
   el.title = name
   document.body.appendChild(el)
-  const rules = ref<StyleSheetRules>({})
+  const rules = ref<Record<string, string>>({})
   const stylesheet: CSSStyleSheet | undefined = Object.values(document.styleSheets).find(({ title }) => title === name)
 
   watch(rules, (styles) => {
@@ -18,8 +18,8 @@ export function useStyleSheet(name: string) {
     for (let i = 0; i < stylesheet.rules.length; ++i)
       stylesheet.deleteRule(i)
 
-    // Determine which styles to add
-    Object.keys(styles)
+    Object
+      .keys(styles)
       .forEach(selector => stylesheet.insertRule(`${selector} { ${styles[selector]} }`))
   })
 

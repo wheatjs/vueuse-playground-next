@@ -175,6 +175,23 @@ async function updatePreview() {
 
       const app = window.__app__ = _createApp(__modules__["${MAIN_FILE}"].default)
       app.config.errorHandler = e => console.error(e)
+
+      console.log('Showing Modules', __modules__)
+
+      // App enhancements
+      const mainFile = __modules__['main.js']
+
+      if (mainFile && mainFile.default) {
+        if (mainFile.default.enhanceApp) {
+          console.log('Doing Enhance App')
+          mainFile.default.enhanceApp(app)
+        }
+      }
+
+      // if (__APP_ENHANCE__ && __APP_ENHANCE__.enhanceApp) {
+      //   __APP_ENHANCE__.enhanceApp(app)
+      // }
+
       app.mount('#app')
       `.trim(),
     ])
