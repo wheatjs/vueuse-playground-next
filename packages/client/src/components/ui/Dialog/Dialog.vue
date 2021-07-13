@@ -1,3 +1,9 @@
+<script lang="ts">
+export default {
+  inheritAttrs: false,
+}
+</script>
+
 <script setup lang="ts">
 import { useVModel } from '@vueuse/core'
 import { Dialog as HeadlessDialog, DialogOverlay, TransitionRoot } from '@headlessui/vue'
@@ -9,7 +15,7 @@ const close = () => isOpen.value = false
 const open = () => isOpen.value = true
 </script>
 
-<template inherit-attrs="false">
+<template>
   <HeadlessDialog
     position="fixed inset-0"
     overflow="y-auto"

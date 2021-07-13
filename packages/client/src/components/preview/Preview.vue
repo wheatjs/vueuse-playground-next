@@ -24,7 +24,6 @@ onMounted(createSandbox)
 // reset sandbox when import map changes
 
 watch(() => packages.importMap, (importMap, prev) => {
-  console.log('Updating IMport map', importMap)
   if (!importMap) {
     if (prev) {
       // import-map.json deleted

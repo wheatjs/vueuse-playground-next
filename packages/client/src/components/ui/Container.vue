@@ -1,8 +1,14 @@
+<script lang="ts">
+export default {
+  inheritAttrs: false,
+}
+</script>
+
 <script setup lang="ts">
 
 </script>
 
-<template inherit-attrs="false">
+<template>
   <div
     w="full"
     h="full"

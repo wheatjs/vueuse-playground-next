@@ -24,7 +24,8 @@ export class CssFile extends BaseFile {
 
   public get compiled() {
     return {
-      json: this.css.text,
+      css: this.css.text,
+      js: '',
     }
   }
 }
