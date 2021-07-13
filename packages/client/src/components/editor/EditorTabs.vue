@@ -3,7 +3,7 @@ import { onClickOutside } from '@vueuse/core'
 import { getExtensionFromFilename } from '@playground/shared'
 import Draggable from 'vuedraggable'
 import { fs, filesystem, SUPPORTED_EXTENSIONS } from '~/store'
-import { CssFile, JsonFile, ScriptFile, SFCFile } from '~/services/files'
+import { CssFile, JsonFile, ScriptFile, SFCFile } from '~/store/filesystem/files'
 
 const target = ref<HTMLInputElement>()
 const isAddingFile = ref(false)

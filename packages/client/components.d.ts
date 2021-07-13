@@ -50,6 +50,7 @@ declare module 'vue' {
     RadioGroup: typeof import('./src/components/ui/Radio/RadioGroup.vue')['default']
     RadioGroupOption: typeof import('./src/components/ui/Radio/RadioGroupOption.vue')['default']
     Share: typeof import('./src/components/share/Share.vue')['default']
+    Spinner: typeof import('./src/components/ui/Spinner.vue')['default']
     Squircle: typeof import('./src/components/ui/Squircle.vue')['default']
     Textfield: typeof import('./src/components/ui/Textfield/Textfield.vue')['default']
     VscodeIconsDefaultFile: typeof import('virtual:vite-icons/vscode-icons/default-file')['default']

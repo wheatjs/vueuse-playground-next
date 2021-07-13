@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import { until, createEventHook, tryOnUnmounted, MaybeRef } from '@vueuse/core'
 import darkTheme from 'theme-vitesse/themes/vitesse-dark.json'
 import lightTheme from 'theme-vitesse/themes/vitesse-light.json'
@@ -20,10 +21,8 @@ export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType)
   watch(() => unref(options.model), async() => {
     await until(isSetup).toBeTruthy()
 
-    if (editor) {
+    if (editor)
       editor.setModel(unref(options.model))
-      console.log(unref(options.model))
-    }
   }, { immediate: true })
 
   const init = async() => {

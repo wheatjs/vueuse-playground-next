@@ -1,7 +1,7 @@
 import { createEventHook } from '@vueuse/core'
-import { BaseFile, SFCFile } from '~/services/files'
+import { BaseFile, SFCFile } from '~/store/filesystem/files'
 import { compileFile } from '~/preview/compiler'
-import { ScriptFile } from '~/services/files/script'
+import { ScriptFile } from '~/store/filesystem/files/script'
 
 export interface FSFile {
   filename: string
@@ -107,6 +107,7 @@ class Filesystem {
     fs.filenames = Object.keys(this.files)
   }
 
+  // @ts-ignore
   public get currentFile(): BaseFile {
     return this.files[this.currentFilename]
   }

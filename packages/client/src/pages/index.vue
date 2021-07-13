@@ -2,15 +2,18 @@
 import { Splitpanes, Pane } from 'splitpanes'
 import { Hako } from 'vue-hako'
 import * as monaco from 'monaco-editor'
-import { fs, filesystem } from '~/store/files'
-import { CssFile, JsonFile, SFCFile } from '~/services/files'
+import { fs, filesystem, usePackages } from '~/store'
+import { CssFile, JsonFile, SFCFile, ScriptFile } from '~/store/filesystem/files'
 import ContainerTitle from '~/components/ui/ContainerTitle.vue'
-import { ScriptFile } from '~/services/files/script'
 
-const defaultScriptModel = monaco.editor.createModel('')
-const defaultTemplateModel = monaco.editor.createModel('')
-const defaultStyleModel = monaco.editor.createModel('')
+// To ensure that monaco loads all the wokers we need to define each langage
+// in a model
+const defaultScriptModel = monaco.editor.createModel('', 'js')
+const defaultTemplateModel = monaco.editor.createModel('', 'html')
+const defaultStyleModel = monaco.editor.createModel('', 'css')
 const defaultJsonModel = monaco.editor.createModel('', 'json')
+
+const packages = usePackages()
 
 const scriptModel = computed(() => {
   const currrentFile = filesystem.files[fs.currentFilename]
@@ -77,6 +80,13 @@ const type = computed(() => {
                   <Container class="!rounded-t-none">
                     <template #title>
                       <ContainerTitle :type="type" />
+                      <span flex="1"></span>
+                      <template v-if="packages.isResolving">
+                        <span text="xs dark:light-900 dark:opacity-50">
+                          Acquiring Types
+                        </span>
+                        <Spinner w="3" h="3" />
+                      </template>
                     </template>
                     <Editor :model="scriptModel" />
                   </Container>

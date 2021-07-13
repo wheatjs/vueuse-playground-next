@@ -65,7 +65,10 @@ export const usePackages = defineStore({
     } as UsePackagesState
   },
   getters: {
-    currentlyResolving(state: UsePackagesState) { state.packages.filter(({ isResolving }) => isResolving).map(({ name }) => name) },
+    currentlyResolving(state: UsePackagesState) { return state.packages.filter(({ isResolving }) => isResolving).map(({ name }) => name) },
+    isResolving() {
+      return this.currentlyResolving.length > 0
+    },
     importMap(state: UsePackagesState) {
       return `
         {

@@ -150,7 +150,6 @@ function createSandbox() {
 }
 async function updatePreview() {
   // console.clear()
-  // console.log('Doing preivew update', store.files)
   runtimeError.value = null
   runtimeWarning.value = null
   try {
@@ -174,14 +173,11 @@ async function updatePreview() {
       const app = window.__app__ = _createApp(__modules__["${MAIN_FILE}"].default)
       app.config.errorHandler = e => console.error(e)
 
-      console.log('Showing Modules', __modules__)
-
       // App enhancements
       const mainFile = __modules__['main.js']
 
       if (mainFile && mainFile.default) {
         if (mainFile.default.enhanceApp) {
-          console.log('Doing Enhance App')
           mainFile.default.enhanceApp(app)
         }
       }

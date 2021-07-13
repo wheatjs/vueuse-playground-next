@@ -283,7 +283,6 @@ export class CollaborationManager {
   }
 
   private onFileAdd({ name, script, style, template }: FileAddEvent) {
-    console.log('Do File Add')
     createFile(new File(name, template, script, style), true)
   }
 

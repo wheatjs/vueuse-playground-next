@@ -7,7 +7,7 @@ import {
 import { babelParserDefaultPlugins } from '@vue/shared'
 import { ExportSpecifier, Identifier, Node, ObjectProperty } from '@babel/types'
 import { filesystem } from '~/store'
-import { SFCFile, BaseFile } from '~/services/files'
+import { SFCFile, BaseFile } from '~/store/filesystem/files'
 
 const MAIN_FILE = 'App.vue'
 
@@ -237,7 +237,7 @@ function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
   const processed = [s.toString()]
   if (importedFiles.size) {
     for (const imported of importedFiles)
-      processed.push(...processFile(filesystem.files[imported], seen))
+      processed.push(...processFile(filesystem.files[imported] as SFCFile, seen))
   }
 
   // return a list of files to further process

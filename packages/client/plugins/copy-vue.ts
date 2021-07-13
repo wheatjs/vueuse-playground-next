@@ -16,7 +16,6 @@ function copyVuePlugin(): Plugin {
         __dirname,
         '../node_modules/vue/dist/vue.runtime.esm-browser.js',
       )
-      console.log(filePath)
       if (!fs.existsSync(filePath)) {
         throw new Error(
           'vue.runtime.esm-browser.js not built. '
