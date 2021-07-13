@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import { useVModel } from '@vueuse/core'
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/vue'
 

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
-// import { playground, PROTECTED_FILES, deleteFile, openFile } from '~/store'
 import { filesystem, fs } from '~/store'
 
 const props = defineProps<{ name: string; noIcon?: boolean; isProtected?: boolean }>()

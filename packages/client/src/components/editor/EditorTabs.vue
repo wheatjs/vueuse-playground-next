@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { getExtensionFromFilename } from '@playground/shared'
 import Draggable from 'vuedraggable'
 import { fs, filesystem, SUPPORTED_EXTENSIONS } from '~/store'
-import { ScriptFile, SFCFile } from '~/services/files'
-// import { playground, createFile, File, VALID_EXTENSIONS } from '~/store'
+import { CssFile, JsonFile, ScriptFile, SFCFile } from '~/services/files'
 
 const target = ref<HTMLInputElement>()
 const isAddingFile = ref(false)
@@ -35,6 +33,10 @@ const addFile = (name: string) => {
       filesystem.createFile(new SFCFile({ filename: name }))
     else if (name.endsWith('.js'))
       filesystem.createFile(new ScriptFile({ filename: name }))
+    else if (name.endsWith('.json'))
+      filesystem.createFile(new JsonFile({ filename: name }))
+    else if (name.endsWith('.css'))
+      filesystem.createFile(new CssFile({ filename: name }))
 
     isAddingFile.value = false
     filename.value = ''

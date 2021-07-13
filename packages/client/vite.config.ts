@@ -36,6 +36,7 @@ export default defineConfig({
           htmlWorker: ['./src/monaco/languages/html/html.worker'],
           tsWorker: ['monaco-editor/esm/vs/language/typescript/ts.worker'],
           cssWorker: ['monaco-editor/esm/vs/language/css/css.worker'],
+          jsonWorker: ['monaco-editor/esm/vs/language/json/json.worker'],
           editorWorker: ['monaco-editor/esm/vs/editor/editor.worker'],
         },
       },

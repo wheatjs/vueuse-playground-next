@@ -69,7 +69,7 @@ export async function resolvePackage(name: string, version?: string, file?: stri
     })
 
     if (metadata.dependencies) {
-      (await Promise.allSettled(Object.keys(metadata.dependencies).map(name => resolvePackage(name))))
+      (await Promise.allSettled(Object.entries(metadata.dependencies).map(([name, version]) => resolvePackage(name, version))))
         .forEach((result) => {
           if (result.status === 'fulfilled' && result.value)
             packages.push(...result.value)

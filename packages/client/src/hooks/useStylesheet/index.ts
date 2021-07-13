@@ -1,5 +1,3 @@
-import { ref, watch } from 'vue'
-
 export interface StyleSheetRules {
   [key: string]: string
 }

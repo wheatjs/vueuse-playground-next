@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { inject, defineProps, onMounted } from 'vue'
-import type { Ref } from 'vue'
 const props = defineProps<{ name: string; active?: boolean }>()
 const activeTab = inject<any>('activeTab')
 const tabs = inject<Ref<string[]>>('tabs')

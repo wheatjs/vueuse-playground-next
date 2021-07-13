@@ -1,4 +1,3 @@
-import { watch, Ref, unref, ref } from 'vue'
 import { until, createEventHook, tryOnUnmounted, MaybeRef } from '@vueuse/core'
 import darkTheme from 'theme-vitesse/themes/vitesse-dark.json'
 import lightTheme from 'theme-vitesse/themes/vitesse-light.json'
@@ -21,8 +20,10 @@ export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType)
   watch(() => unref(options.model), async() => {
     await until(isSetup).toBeTruthy()
 
-    if (editor)
+    if (editor) {
       editor.setModel(unref(options.model))
+      console.log(unref(options.model))
+    }
   }, { immediate: true })
 
   const init = async() => {
@@ -67,15 +68,21 @@ export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType)
         const model = editor.getModel()
 
         if (model) {
-          const plugins = editorPlugins.filter(({ language }) => language === model.getModeId())
+          const plugins = editorPlugins.filter(({ language }) => language === model.getModeId() || language === '*')
 
           plugins.forEach((p) => {
             if (p.init)
               p.init(editor)
+
+            if (p.action && !editor.getAction(p.action.id))
+              editor.addAction(p.action)
           })
           modelDisposables.push(model.onDidChangeContent(() => {
             changeEventHook.trigger(editor.getValue())
-            plugins.forEach(({ onContentChanged }) => onContentChanged(editor))
+            plugins.forEach((plugin) => {
+              if (plugin.onContentChanged)
+                plugin.onContentChanged(editor)
+            })
           }))
         }
       })

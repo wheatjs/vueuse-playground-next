@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
 import { useVModel } from '@vueuse/core'
 
 const target = ref<HTMLInputElement>()

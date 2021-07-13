@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import { useVModel } from '@vueuse/core'
 import { Dialog as HeadlessDialog, DialogOverlay, TransitionRoot } from '@headlessui/vue'
 

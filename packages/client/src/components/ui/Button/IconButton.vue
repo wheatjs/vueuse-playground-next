@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
 import { reactivePick } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
 

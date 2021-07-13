@@ -3,7 +3,7 @@ import { HTMLParser } from 'windicss/utils/parser'
 
 export function generateStyles(html: string) {
   // Get windi processor
-  const whitelist = [
+  const allowList = [
     'dark:text-light-300',
     'text-dark-100',
   ].join(' ')
@@ -25,7 +25,7 @@ export function generateStyles(html: string) {
   const preflightSheet = processor.preflight(html)
 
   // Process the html classes to an interpreted style sheet
-  const interpretedSheet = processor.interpret(`${htmlClasses} ${whitelist}`).styleSheet
+  const interpretedSheet = processor.interpret(`${htmlClasses} ${allowList}`).styleSheet
 
   // Always returns array
   const castArray = (val: any) => (Array.isArray(val) ? val : [val])

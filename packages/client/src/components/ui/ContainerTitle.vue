@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
-
-type TitleType = 'sfc:script' | 'sfc:template' | 'sfc:style' | 'preview' | 'console' | 'settings'
+type TitleType = 'sfc:script' | 'sfc:template' | 'sfc:style' | 'script' | 'json' | 'preview' | 'console' | 'settings'
 
 defineProps<{ type: TitleType }>()
 </script>
 
 <template>
+  <template v-if="type === 'script'">
+    <mdi-code-braces />
+    <span>
+      Script
+    </span>
+  </template>
   <template v-if="type === 'sfc:script'">
     <mdi-code-braces />
     <span>
@@ -23,6 +27,12 @@ defineProps<{ type: TitleType }>()
     <mdi-language-css3 />
     <span>
       Style
+    </span>
+  </template>
+  <template v-if="type === 'json'">
+    <vscode-icons-file-type-json />
+    <span>
+      Json
     </span>
   </template>
   <template v-if="type === 'preview'">

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, defineProps, toRefs } from 'vue'
 import { editor as Editor } from 'monaco-editor'
 import { useMonaco } from '~/monaco/useMonaco'
 

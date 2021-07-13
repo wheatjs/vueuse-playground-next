@@ -1,6 +1,5 @@
 import { SFCDescriptor, BindingMetadata } from '@vue/compiler-sfc'
 import * as defaultCompiler from '@vue/compiler-sfc'
-import { ref } from 'vue'
 import { generateStyles } from './windicss'
 import { fs } from '~/store'
 import { SFCFile } from '~/services/files'

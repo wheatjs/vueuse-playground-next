@@ -1,3 +1,4 @@
+import 'vue-global-api'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watchEffect, watch } from 'vue'
 import type { WatchStopHandle } from 'vue'
 import srcdoc from '~/preview/template.html?raw'
 import { PreviewProxy } from '~/preview/PreviewProxy'

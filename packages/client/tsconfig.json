@@ -19,6 +19,7 @@
     },
     "types": [
       "vite-plugin-pages/client",
+      "vue-global-api/index.d.ts"
     ]
   },
   "include": [

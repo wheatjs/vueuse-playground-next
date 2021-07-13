@@ -29,11 +29,12 @@
   "homepage": "https://github.com/wheatjs/vueuse-playground-next#readme",
   "devDependencies": {
     "@antfu/eslint-config": "^0.6.6",
-    "eslint": "^7.29.0",
-    "pnpm": "^6.9.0",
-    "tsup": "^4.11.2"
+    "eslint": "^7.30.0",
+    "pnpm": "^6.10.1",
+    "tsup": "^4.12.5"
   },
   "dependencies": {
-    "automerge": "^1.0.1-preview.3"
+    "automerge": "^1.0.1-preview.3",
+    "vue-global-api": "^0.1.3"
   }
 }

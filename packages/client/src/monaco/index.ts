@@ -1,4 +1,3 @@
-import { getCurrentInstance, onMounted, watch } from 'vue'
 import * as monaco from 'monaco-editor'
 import { createSingletonPromise } from '@antfu/utils'
 // import types from '@vue/runtime-dom'
@@ -79,11 +78,13 @@ const setup = createSingletonPromise(async() => {
     (async() => {
       const [
         { default: EditorWorker },
+        { default: JsonWorker },
         { default: HtmlWorker },
         { default: TsWorker },
         { default: CssWorker },
       ] = await Promise.all([
         import('monaco-editor/esm/vs/editor/editor.worker?worker'),
+        import('monaco-editor/esm/vs/language/json/json.worker?worker'),
         import('./languages/html/html.worker?worker'),
         import('monaco-editor/esm/vs/language/typescript/ts.worker?worker'),
         import('monaco-editor/esm/vs/language/css/css.worker?worker'),
@@ -92,6 +93,11 @@ const setup = createSingletonPromise(async() => {
       // @ts-expect-error
       window.MonacoEnvironment = {
         getWorker(_: any, label: string) {
+          console.log('The label', label)
+          if (label === 'json') {
+            console.log('Here is the json worker', JsonWorker)
+            return new JsonWorker()
+          }
           if (label === 'html' || label === 'handlebars' || label === 'razor')
             return new HtmlWorker()
           if (label === 'typescript' || label === 'javascript')

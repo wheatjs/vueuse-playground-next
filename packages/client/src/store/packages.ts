@@ -34,6 +34,9 @@ const PACKAGE_OVERRIDES: Record<string, PackageOverride> = {
   'vuetify': {
     version: 'next',
   },
+  'v-tooltip': {
+    version: 'vue3',
+  },
 }
 
 const UNPKG_URL = (name: string, url: string, version?: string) => `https://unpkg.com/${version ? `${name}@${version}` : name}/${url}`
