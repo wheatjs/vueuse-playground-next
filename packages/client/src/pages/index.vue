@@ -5,6 +5,7 @@ import * as monaco from 'monaco-editor'
 import { fs, filesystem, usePackages } from '~/store'
 import { CssFile, JsonFile, SFCFile, ScriptFile } from '~/store/filesystem/files'
 import ContainerTitle from '~/components/ui/ContainerTitle.vue'
+import PreviewErrors from '~/components/preview/PreviewOutput.vue'
 
 // To ensure that monaco loads all the wokers we need to define each langage
 // in a model
@@ -12,6 +13,8 @@ const defaultScriptModel = monaco.editor.createModel('', 'js')
 const defaultTemplateModel = monaco.editor.createModel('', 'html')
 const defaultStyleModel = monaco.editor.createModel('', 'css')
 const defaultJsonModel = monaco.editor.createModel('', 'json')
+
+const settingsModel = (filesystem.files['settings.json'] as JsonFile).json.model
 
 const packages = usePackages()
 
@@ -32,6 +35,9 @@ const scriptModel = computed(() => {
 
 const templateModel = computed(() => {
   const currrentFile = filesystem.files[fs.currentFilename]
+
+  if (currrentFile.filename === 'main.js')
+    return settingsModel
 
   if (currrentFile && !(currrentFile instanceof SFCFile))
     return null
@@ -97,7 +103,7 @@ const type = computed(() => {
                       <ContainerTitle v-if="fs.currentFilename !== 'main.js'" type="sfc:template" />
                       <ContainerTitle v-else type="settings" />
                     </template>
-                    <Editor v-if="fs.currentFilename !== 'main.js'" :model="templateModel" />
+                    <Editor :model="templateModel" />
                   </Container>
                 </Pane>
                 <!-- <Pane>
@@ -136,8 +142,7 @@ const type = computed(() => {
                   <ContainerTitle type="console" />
                 </template>
                 <div overflow="auto" w="full" h="full">
-                  <pre>{{ fs.errors }}</pre>
-                  <pre>{{ fs.runtimeErrors }}</pre>
+                  <PreviewOutput />
                 </div>
               </Container>
             </Pane>

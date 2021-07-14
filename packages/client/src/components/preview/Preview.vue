@@ -100,7 +100,7 @@ function createSandbox() {
         || msg.includes('Error resolving module specifier')
       ) {
         runtimeError.value = `${msg.replace(/\. Relative references must.*$/, '')
-        }.\nTip: add an "import-map.json" file to specify import paths for dependencies.`
+        }.\nYou may need to install this package to use it.`
       }
       else {
         runtimeError.value = event.value

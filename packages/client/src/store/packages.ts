@@ -37,6 +37,10 @@ const PACKAGE_OVERRIDES: Record<string, PackageOverride> = {
   'v-tooltip': {
     version: 'vue3',
   },
+  'splitpanes': {
+    version: 'next',
+    file: 'src/components/splitpanes/index.js',
+  },
 }
 
 const UNPKG_URL = (name: string, url: string, version?: string) => `https://unpkg.com/${version ? `${name}@${version}` : name}/${url}`

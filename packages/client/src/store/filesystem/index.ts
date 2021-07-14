@@ -1,5 +1,5 @@
 import { createEventHook } from '@vueuse/core'
-import { BaseFile, SFCFile } from '~/store/filesystem/files'
+import { BaseFile, JsonFile, SFCFile } from '~/store/filesystem/files'
 import { compileFile } from '~/preview/compiler'
 import { ScriptFile } from '~/store/filesystem/files/script'
 
@@ -62,6 +62,12 @@ class Filesystem {
       filename: 'App.vue',
       isProtected: true,
       onUpdate: filename => this.onUpdate(filename),
+    }),
+    'settings.json': new JsonFile({
+      filename: 'settings.json',
+      isProtected: true,
+      hide: true,
+      initialJsonContent: '{}',
     }),
   }
 
