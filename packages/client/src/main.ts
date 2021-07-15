@@ -13,19 +13,26 @@ import './styles/main.css'
 import './styles/tooltip.css'
 import './styles/splitpanes.css'
 
+import { loadWorkers } from '~/monaco'
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
 })
 
-router.isReady().then(async() => {
-  const { registerSW } = await import('virtual:pwa-register')
-  registerSW({ immediate: true })
-})
+// router.isReady().then(async() => {
+//   const { registerSW } = await import('virtual:pwa-register')
+//   registerSW({ immediate: true })
+// })
 
-createApp(App)
-  .use(router)
-  .use(createPinia())
-  .use(VTooltip)
-  .use(MotionPlugin)
-  .mount('#app')
+async function main() {
+  await loadWorkers()
+  createApp(App)
+    .use(router)
+    .use(createPinia())
+    .use(VTooltip)
+    .use(MotionPlugin)
+    .mount('#app')
+}
+
+main()

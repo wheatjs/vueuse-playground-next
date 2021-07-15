@@ -22,7 +22,7 @@ export default defineConfig({
     Pages(),
     Icons(),
     Windicss(),
-    VitePWA(),
+    // VitePWA(),
     Components({
       globalComponentsDeclaration: true,
       customComponentResolvers: [
