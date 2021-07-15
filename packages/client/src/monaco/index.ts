@@ -88,10 +88,22 @@ const setup = createSingletonPromise(async() => {
 
   const packages = usePackages()
 
+  const globalModules = ['vue-global-api']
+
   watch(() => [fs.filenames, packages.packages], () => {
     const _packages = packages.packages
       .filter(({ isResolving, types }) => !isResolving && types)
-      .map(({ name, types }) => ({ content: `declare module '${name}' { ${types} }` }))
+      .map(({ name, types }) => {
+        if (globalModules.includes(name)) {
+          return {
+            content: types,
+          }
+        }
+
+        return {
+          content: `declare module '${name}' { ${types} }`,
+        }
+      })
 
     const _files = fs.filenames
       .filter(filename => filename.endsWith('.vue'))

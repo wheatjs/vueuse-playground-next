@@ -41,6 +41,9 @@ const PACKAGE_OVERRIDES: Record<string, PackageOverride> = {
     version: 'next',
     file: 'src/components/splitpanes/index.js',
   },
+  'vue-global-api': {
+    version: '0.2.4',
+  },
 }
 
 const UNPKG_URL = (name: string, url: string, version?: string) => `https://unpkg.com/${version ? `${name}@${version}` : name}/${url}`

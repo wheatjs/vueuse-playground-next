@@ -39,7 +39,7 @@ export async function resolveMetadata(name: string): Promise<Partial<PackageMeta
 export async function resolveTypes(metadata: Partial<PackageMetadata>): Promise<string> {
   try {
     if (metadata.types) {
-      const data = await fetch(`https://cdn.jsdelivr.net/npm/${metadata.name}/${metadata.types}`)
+      const data = await fetch(`https://cdn.jsdelivr.net/npm/${metadata.name}@${metadata.version}/${metadata.types}`)
 
       if (data.status !== 200)
         throw new Error('Failed to resolve package types')
