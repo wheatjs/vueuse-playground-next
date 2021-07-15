@@ -53,12 +53,18 @@ export class Document {
     })
   }
 
+  /**
+   * Publishes changes from a document
+   */
   public publishDocumentChanges(changes: automerge.BinaryChange[]) {
     // TODO Publish changes from this
   }
 
-  public onReceiveSyncMessage() {
-    // React to changes
+  /**
+   * Called whenever a document recives changes
+   */
+  public onReceiveDocumentChanges() {
+
   }
 
   private publishUpdates() {

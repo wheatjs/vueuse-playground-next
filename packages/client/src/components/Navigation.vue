@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { useShare, useDownload, usePackages, useCollaboration } from '~/store'
+import { useShare, useDownload, useCollaboration } from '~/store'
 import { toggleDark, isDark } from '~/hooks'
 
 const share = useShare()
 const download = useDownload()
-const packages = usePackages()
 const collaboration = useCollaboration()
 </script>
 
@@ -20,9 +19,6 @@ const collaboration = useCollaboration()
     <Logo w="12" m="b-2" />
     <IconButton v-tooltip.right="'VueUse Docs'" class="transform hover:rotate-8" href="https://vueuse.org/" target="_blank">
       <carbon-notebook />
-    </IconButton>
-    <IconButton v-tooltip.right="'Packages'" class="transform hover:-rotate-12" @click="packages.openDialog()">
-      <carbon-box />
     </IconButton>
     <IconButton v-tooltip.right="'Share'" class="transform hover:rotate-10" @click="share.openDialog()">
       <carbon-share />
@@ -50,7 +46,7 @@ const collaboration = useCollaboration()
         rounded="full"
         flex="~"
         place="items-center content-center"
-        ring="2 dark-900"
+        ring="2 white dark:dark-900"
       >
         {{ collaboration.otherCollaborators.length }}
       </div>
@@ -59,6 +55,9 @@ const collaboration = useCollaboration()
     <IconButton v-tooltip.right="'Toggle Theme'" class="transform hover:rotate-12" @click="toggleDark()">
       <carbon-sun v-if="isDark" />
       <carbon-moon v-else />
+    </IconButton>
+    <IconButton v-tooltip.right="'Sign In'" class="transform hover:-rotate-10">
+      <carbon-login />
     </IconButton>
     <IconButton v-tooltip.right="'Settings'" class="transform hover:-rotate-10">
       <carbon-settings />
