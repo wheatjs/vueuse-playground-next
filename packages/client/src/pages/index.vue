@@ -14,7 +14,7 @@ const defaultTemplateModel = monaco.editor.createModel('', 'html')
 const defaultStyleModel = monaco.editor.createModel('', 'css')
 const defaultJsonModel = monaco.editor.createModel('', 'json')
 
-const settingsModel = (filesystem.files['settings.json'] as JsonFile).json.model
+const settingsModel = (filesystem.files['settings.js'] as ScriptFile).script.model
 
 const packages = usePackages()
 

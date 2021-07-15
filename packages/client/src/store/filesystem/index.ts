@@ -1,5 +1,7 @@
 import { createEventHook } from '@vueuse/core'
-import { BaseFile, JsonFile, SFCFile } from '~/store/filesystem/files'
+import mainJsTemplate from './templates/main?raw'
+import settingsTemplate from './templates/settings?raw'
+import { BaseFile, SFCFile } from '~/store/filesystem/files'
 import { compileFile } from '~/preview/compiler'
 import { ScriptFile } from '~/store/filesystem/files/script'
 
@@ -45,29 +47,18 @@ class Filesystem {
       isProtected: true,
       hide: true,
       onUpdate: filename => this.onUpdate(filename),
-      initialScriptContent: `export default {
-  /**
-   * This function can be used to enhance the existing vue
-   * app instance
-   * 
-   * @param {import('vue').App} app - The vue app instance.
-   */
-  enhanceApp(app) {
-    
-  },
-}
-`,
+      initialScriptContent: mainJsTemplate,
     }),
     'App.vue': new SFCFile({
       filename: 'App.vue',
       isProtected: true,
       onUpdate: filename => this.onUpdate(filename),
     }),
-    'settings.json': new JsonFile({
-      filename: 'settings.json',
+    'settings.js': new ScriptFile({
+      filename: 'settings.js',
       isProtected: true,
       hide: true,
-      initialJsonContent: '{}',
+      initialScriptContent: settingsTemplate,
     }),
   }
 

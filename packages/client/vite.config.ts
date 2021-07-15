@@ -6,6 +6,7 @@ import Pages from 'vite-plugin-pages'
 import Icons, { ViteIconsResolver } from 'vite-plugin-icons'
 import Components, { VueUseComponentsResolver } from 'vite-plugin-components'
 import Windicss from 'vite-plugin-windicss'
+import { VitePWA } from 'vite-plugin-pwa'
 import CopyVue from './plugins/copy-vue'
 
 export default defineConfig({
@@ -21,6 +22,7 @@ export default defineConfig({
     Pages(),
     Icons(),
     Windicss(),
+    VitePWA(),
     Components({
       globalComponentsDeclaration: true,
       customComponentResolvers: [

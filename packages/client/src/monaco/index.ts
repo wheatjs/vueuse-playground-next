@@ -11,6 +11,7 @@ import vueRuntimeDomTypes from '@vue/runtime-dom/dist/runtime-dom.d.ts?raw'
 import vueRuntimeCoreTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
 import vueReactivityTypes from '@vue/reactivity/dist/reactivity.d.ts?raw'
 import localShims from '../shims-vue.d.ts?raw'
+import playgroundSettingsTypes from '~/settings.d.ts?raw'
 import { usePackages, fs } from '~/store'
 
 /* __imports__ */
@@ -35,6 +36,7 @@ const setup = createSingletonPromise(async() => {
   })
 
   const builtinLibs = [
+    { content: `declare module '@playground' { ${playgroundSettingsTypes} }` },
     { content: `declare module '@vue/shared' { ${vueSharedTypes} }` },
     // { content: `declare module '@vue/compiler-core' { ${vueCompilerCoreTypes} }` },
     // { content: `declare module '@vue/compiler-dom' { ${vueCompilerDomTypes} }` },
