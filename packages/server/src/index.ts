@@ -1,98 +1,21 @@
-import { createServer } from 'http'
+import fastify from 'fastify'
 import { Server } from 'socket.io'
-import { nanoid } from 'nanoid'
-import { Collaborator, CollaboratorDisconnetEvent, RoomCreatedEvent, RoomJoinedEvent, SocketEvent, SyncCollaboratorsEvent, SyncFilesRequestEvent, SyncFilesResponseEvent } from '@playground/shared'
-import express, { Router } from 'express'
-import { json } from 'body-parser'
+import { registerRoutes } from './routes'
+import { registerSockets } from './sockets'
 
-// import dbRoutes from './routes'
-
-// const routes = Router()
-// routes.use('/playgrounds', dbRoutes)
-
-const app = express()
-// app.use(json())
-// app.use(routes)
-
-const server = createServer(app)
-
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
-})
-
-const reserved = [
-  'connect',
-  'connect_error',
-  'disconnect',
-  'disconnecting',
-  'newListener',
-  'removeListener',
-  SocketEvent.SyncFilesRequest,
-  SocketEvent.SyncFilesResponse,
-]
-
-io.on('connection', async(socket) => {
-  let username: any
-  let session: any
-  ({ username, session } = socket.handshake.query) // eslint-disable-line prefer-const
-  socket.data.timestamp = Date.now()
-
-  if (session) {
-    socket.join(session)
-    socket.emit(SocketEvent.RoomJoined, { id: socket.id, sender: 'server', timestamp: Date.now() } as RoomJoinedEvent)
-
-    const usersInRoom = (await io.in(session).fetchSockets())
-
-    if (usersInRoom) {
-      const users: Collaborator[] = usersInRoom.map(user => ({ id: user.id, username: (user.handshake.query.username as string) }))
-      io.to(session).emit(SocketEvent.SyncCollaborators, { collaborators: users } as SyncCollaboratorsEvent)
-    }
-  }
-  else {
-    session = nanoid(8)
-    socket.join(session)
-    socket.emit(SocketEvent.RoomCreated, { id: socket.id, sender: 'server', timestamp: Date.now(), session } as RoomCreatedEvent)
-  }
-
-  socket.onAny((eventName, data) => {
-    if (reserved.includes(eventName))
-      return
-
-    socket.broadcast.to(session).emit(eventName, {
-      id: socket.id,
-      username,
-      ...data,
-    })
+export async function main() {
+  const app = fastify()
+  const io = new Server(app.server, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST'],
+    },
   })
 
-  socket.on(SocketEvent.SyncFilesRequest, async(data: SyncFilesRequestEvent) => {
-    // Find the socket user who has been here the longest
-    // and get the files from them
-    const usersInRoom = (await io.in(session).fetchSockets())
+  await registerRoutes(app)
+  await registerSockets(io)
 
-    usersInRoom.sort((x, y) => x.data.timestamp - y.data.timestamp)
-    usersInRoom[0].emit(SocketEvent.SyncFilesRequest, data)
+  app.listen(process.env.port || 4000, (e, address) => {
+    console.log(`Listening on ${address}`) // eslint-disable-line no-console
   })
-
-  socket.on(SocketEvent.SyncFilesResponse, async(data: SyncFilesResponseEvent) => {
-    // Send the files to the appropriate socket
-    const usersInRoom = (await io.in(session).fetchSockets())
-
-    usersInRoom.find(({ id }) => id === data.to)?.emit(SocketEvent.SyncFilesResponse, data)
-  })
-
-  socket.on('disconnect', async() => {
-    io.to(session).emit(SocketEvent.CollaboratorDisconnet, { sender: socket.id, timestamp: Date.now() } as CollaboratorDisconnetEvent)
-
-    const usersInRoom = (await io.in(session).fetchSockets())
-    if (usersInRoom) {
-      const users: Collaborator[] = usersInRoom.map(user => ({ id: user.id, username: (user.handshake.query.username as string) }))
-      io.to(session).emit(SocketEvent.SyncCollaborators, { collaborators: users } as SyncCollaboratorsEvent)
-    }
-  })
-})
-
-server.listen(4000)
+}

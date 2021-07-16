@@ -4,7 +4,7 @@ import { ServiceKey } from './serviceKey'
 /**
  * Manages Firestore interactions
  */
-class FirebaseManager {
+export class FirebaseManager {
   private db: FirebaseFirestore.Firestore
 
   constructor() {
@@ -39,5 +39,3 @@ class FirebaseManager {
     return res?.data()
   }
 }
-
-export default new FirebaseManager()

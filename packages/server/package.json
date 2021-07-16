@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "esno ./src/index.ts",
-    "serve": "esno ./src/index.ts",
+    "dev": "esno ./src/program.ts",
+    "serve": "esno ./src/program.ts",
     "build": "echo \"Error: no build command specified\" && exit 1"
   },
   "keywords": [],
@@ -19,7 +19,7 @@
     "body-parser": "^1.19.0",
     "esno": "^0.7.3",
     "express": "^4.17.1",
-    "fastify": "^3.19.0",
+    "fastify": "^3.19.1",
     "fastify-websocket": "^3.2.0",
     "firebase-admin": "^9.10.0",
     "nanoid": "^3.1.23",

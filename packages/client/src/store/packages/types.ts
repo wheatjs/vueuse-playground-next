@@ -1,0 +1,15 @@
+export interface PlaygroundPackage {
+  name: string
+  version: string
+  types: string
+  entry: string
+}
+
+export interface PackageMetadata {
+  name: string
+  version: string
+  main: string
+  types: string
+  module: string
+  dependencies: Record<string, string>
+}
