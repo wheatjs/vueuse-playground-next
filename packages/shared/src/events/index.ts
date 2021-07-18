@@ -14,6 +14,8 @@ export enum SocketEvent {
   PackageAdd = 'package-add',
   PackageRemove = 'package-remove',
 
+  DocumentChange = 'document-change',
+
   EditorInsert = 'editor-insert',
   EditorDelete = 'editor-delete',
   EditorReplace = 'editor-replace',
@@ -82,6 +84,11 @@ export interface SyncCollaboratorsEvent extends BaseEvent {
 
 export interface SyncFilesRequestEvent extends BaseEvent {
 
+}
+
+export interface DocumentChangeEvent extends BaseEvent {
+  filename: string
+  changes: any
 }
 
 export interface SyncFilesResponseEvent extends BaseEvent, FileExports {

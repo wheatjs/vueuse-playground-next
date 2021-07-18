@@ -7,6 +7,7 @@ export interface ScriptFileOptions extends FileOptions {
 
 export class ScriptFile extends BaseFile {
   public script: Document
+  public type = 'script'
 
   constructor(options: ScriptFileOptions) {
     super(options)
@@ -16,6 +17,14 @@ export class ScriptFile extends BaseFile {
       language: 'javascript',
       initialContent: options.initialScriptContent,
     })
+  }
+
+  public exportDocuments() {
+    return { script: this.script.export() }
+  }
+
+  public importDocuments(imports: any) {
+    this.script.import(imports.script)
   }
 
   public override toString() {

@@ -7,6 +7,7 @@ export interface CssFileOptions extends FileOptions {
 
 export class CssFile extends BaseFile {
   public css: Document
+  public type = 'css'
 
   constructor(options: CssFileOptions) {
     super(options)
@@ -16,6 +17,14 @@ export class CssFile extends BaseFile {
       language: 'css',
       initialContent: options.initialCssContent,
     })
+  }
+
+  public override exportDocuments() {
+    return { css: this.css.export() }
+  }
+
+  public override importDocuments(imports: any) {
+    this.css.import(imports.css)
   }
 
   public override toString() {

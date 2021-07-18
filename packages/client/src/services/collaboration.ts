@@ -1,10 +1,10 @@
 import { io, Socket } from 'socket.io-client'
-import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent, CollaboratorDisconnetEvent, insertAt, deleteAt, FileAddEvent, FileDeleteEvent } from '@playground/shared'
+import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent, CollaboratorDisconnetEvent, FileAddEvent, FileDeleteEvent, DocumentChangeEvent } from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
-import { useCollaboration, usePackages, onAddPackage, onRemovePackage } from '~/store'
+import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, fs } from '~/store'
 import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
-import { compileFile } from '~/preview/compiler'
+import { ScriptFile, SFCFile } from '~/store/filesystem/files'
 
 type EmitParameter<T> = Omit<T, 'sender' | 'timestamp'>
 
@@ -41,7 +41,7 @@ export class CollaborationManager {
       })
     }
 
-    this.attachEditors()
+    // this.attachEditors()
     if (!this.hasAttached) {
       this.attachEventListeners()
       this.hasAttached = true
@@ -62,51 +62,6 @@ export class CollaborationManager {
     this.hasSynced = false
   }
 
-  private attachEditors() {
-    editors.forEach(({ editor, type }) => {
-      this.fileEditors.push({
-        editor,
-        type,
-        manager: new MonacoCollaborationManager(
-          editor,
-          type,
-          {
-            onCursor: offset => this.emitEditorCursorEvent({
-              filename: 'App.vue',
-              offset,
-              sfcType: type,
-            }),
-            onSelect: (startOffset, endOffset) => this.emitEditorSelectionEvent({
-              filename: 'App.vue',
-              offsetStart: startOffset,
-              offsetEnd: endOffset,
-              sfcType: type,
-            }),
-            onInsert: (index, text) => this.emitEditorInsertEvent({
-              filename: 'App.vue',
-              index,
-              text,
-              sfcType: type,
-            }),
-            onDelete: (index, length) => this.emitEditorDeleteEvent({
-              filename: 'App.vue',
-              index,
-              length,
-              sfcType: type,
-            }),
-            onReplace: (index, length, text) => this.emitEditorReplaceEvent({
-              filename: 'App.vue',
-              index,
-              length,
-              text,
-              sfcType: type,
-            }),
-          },
-        ),
-      })
-    })
-  }
-
   private attachEventListeners() {
     this.client.on(SocketEvent.Connect, () => this.onConnect())
     this.client.on(SocketEvent.Disconnect, () => this.onDisconnect())
@@ -116,8 +71,8 @@ export class CollaborationManager {
     this.client.on(SocketEvent.CollaboratorDisconnet, (data: CollaboratorDisconnetEvent) => this.onCollaboratorDisconnect(data))
 
     this.client.on(SocketEvent.SyncCollaborators, (data: SyncCollaboratorsEvent) => this.onSyncCollaborators(data))
-    // this.client.on(SocketEvent.SyncFilesRequest, (data: SyncFilesRequestEvent) => this.onSyncFilesRequest(data))
-    // this.client.on(SocketEvent.SyncFilesResponse, (data: SyncFilesResponseEvent) => this.onSyncFilesResponse(data))
+    this.client.on(SocketEvent.SyncFilesRequest, (data: SyncFilesRequestEvent) => this.onSyncFilesRequest(data))
+    this.client.on(SocketEvent.SyncFilesResponse, (data: SyncFilesResponseEvent) => this.onSyncFilesResponse(data))
 
     this.client.on(SocketEvent.PackageAdd, (data: PackageAddEvent) => this.onPackageAdd(data))
     this.client.on(SocketEvent.PackageRemove, (data: PackageRemoveEvent) => this.onPackageRemove(data))
@@ -130,6 +85,31 @@ export class CollaborationManager {
 
     // this.client.on(SocketEvent.FileAdd, (data: FileAddEvent) => this.onFileAdd(data))
     // this.client.on(SocketEvent.FileDelete, (data: FileAddEvent) => this.onFileDelete(data))
+
+    this.client.on(SocketEvent.DocumentChange, (data: DocumentChangeEvent) => this.onDocumentChange(data))
+
+    // Manage Event listeners for documents
+    filesystem.documents.forEach((document) => {
+      document.onDocumentChange(({ name, changes }) => {
+        this.emitDocumentChangeEvent({
+          filename: name,
+          changes,
+        })
+      })
+    })
+
+    onFileCreated((filename) => {
+      filesystem
+        .getDocumentsFromFile(filesystem.files[filename])
+        .forEach((document) => {
+          document.onDocumentChange(({ name, changes }) => {
+            this.emitDocumentChangeEvent({
+              filename: name,
+              changes,
+            })
+          })
+        })
+    })
 
     /**
      * Non-Socket Listeners
@@ -184,21 +164,37 @@ export class CollaborationManager {
     this.collaboration.collaborators = collaborators
   }
 
-  // private onSyncFilesRequest({ sender }: SyncFilesRequestEvent) {
-  //   this.emitFileSyncResponse({
-  //     to: sender,
-  //     ...exportFiles(),
-  //   })
-  // }
+  private onDocumentChange({ filename, changes }: DocumentChangeEvent) {
+    // Document file names are delmieted by [filename]:[type], so we can get the name
+    // and type by splitting along that
+    const [name, type] = filename.split(':')
 
-  // private onSyncFilesResponse({ activeFilename, files }: SyncFilesResponseEvent) {
-  //   importFiles({
-  //     files,
-  //     activeFilename,
-  //   })
+    if (type === 'template')
+      (filesystem.files[name] as SFCFile).template.onReceiveDocumentChanges(changes)
 
-  //   setTimeout(() => this.hasSynced = true, 100)
-  // }
+    if (type === 'script')
+      (filesystem.files[name] as ScriptFile).script.onReceiveDocumentChanges(changes)
+
+    console.log(name, type)
+  }
+
+  private onSyncFilesRequest({ sender }: SyncFilesRequestEvent) {
+    this.emitFileSyncResponse({
+      to: sender,
+      files: filesystem.saveFiles(),
+    })
+  }
+
+  private onSyncFilesResponse({ activeFilename, files }: SyncFilesResponseEvent) {
+    console.log('File Sync Response')
+    filesystem.loadFiles(files)
+    // importFiles({
+    //   files,
+    //   activeFilename,
+    // })
+
+    // setTimeout(() => this.hasSynced = true, 100)
+  }
 
   private onPackageAdd({ name }: PackageAddEvent) {
     this.packages.addPackage(name)
@@ -208,87 +204,9 @@ export class CollaborationManager {
     this.packages.removePackage(name)
   }
 
-  // private onEditorInsert({ index, text, sfcType, filename }: EditorInsertEvent) {
-  //   if (!this.shouldUpdateEditor(filename)) {
-  //     const source = playground.files[filename][sfcType]
-  //     playground.files[filename][sfcType] = insertAt(source, index, text)
-  //     compileFile(playground.files[filename])
-  //     return
-  //   }
-
-  //   this.fileEditors
-  //     .filter(({ type }) => type === sfcType)
-  //     .forEach(({ manager }) => {
-  //       manager.insertContent(index, text)
-  //     })
-  // }
-
-  // private onEditorDelete({ index, length, sfcType, filename }: EditorDeleteEvent) {
-  //   if (!this.shouldUpdateEditor(filename)) {
-  //     const source = playground.files[filename][sfcType]
-  //     playground.files[filename][sfcType] = deleteAt(source, index, length)
-  //     compileFile(playground.files[filename])
-  //     return
-  //   }
-
-  //   this.fileEditors
-  //     .filter(({ type }) => type === sfcType)
-  //     .forEach(({ manager }) => {
-  //       manager.deleteContent(index, length)
-  //     })
-  // }
-
-  // private onEditorReplace({ index, length, text, sfcType, filename }: EditorReplaceEvent) {
-  //   if (!this.shouldUpdateEditor(filename)) {
-  //     const deleted = deleteAt(playground.files[filename][sfcType], index, length)
-  //     playground.files[filename][sfcType] = insertAt(deleted, index, text)
-  //     compileFile(playground.files[filename])
-  //     return
-  //   }
-
-  //   this.fileEditors
-  //     .filter(({ type }) => type === sfcType)
-  //     .forEach(({ manager }) => {
-  //       manager.replaceContent(index, length, text)
-  //     })
-  // }
-
-  // private onEditorCursor({ offset, sender, sfcType, filename }: EditorCursorEvent) {
-  //   if (!this.shouldUpdateEditor(filename)) {
-  //     this.fileEditors
-  //       .filter(({ type }) => type === sfcType)
-  //       .forEach(({ manager }) => {
-  //         manager.hideCursor(sender)
-  //       })
-  //     return
-  //   }
-
-  //   this.fileEditors
-  //     .filter(({ type }) => type === sfcType)
-  //     .forEach(({ manager }) => {
-  //       manager.setCursorPosition(sender, this.getUsernameById(sender), 'red', offset)
-  //       manager.showCursor(sender)
-  //     })
-  // }
-
-  // private onEditorSelection({ sender, offsetStart, offsetEnd, sfcType, filename }: EditorSelectionEvent) {
-  //   if (!this.shouldUpdateEditor(filename))
-  //     return
-
-  //   this.fileEditors
-  //     .filter(({ type }) => type === sfcType)
-  //     .forEach(({ manager }) => {
-  //       manager.setSelection(sender, 'red', offsetStart, offsetEnd)
-  //     })
-  // }
-
-  // private onFileAdd({ name, script, style, template }: FileAddEvent) {
-  //   createFile(new File(name, template, script, style), true)
-  // }
-
-  // private onFileDelete({ name }: FileDeleteEvent) {
-  //   deleteFile(name, true)
-  // }
+  public emitDocumentChangeEvent(data: EmitParameter<DocumentChangeEvent>) {
+    this.emit(SocketEvent.DocumentChange, data)
+  }
 
   public emitFileSyncRequest(data: EmitParameter<SyncFilesRequestEvent>) {
     this.emit(SocketEvent.SyncFilesRequest, data)
@@ -297,14 +215,6 @@ export class CollaborationManager {
   public emitFileSyncResponse(data: EmitParameter<SyncFilesResponseEvent>) {
     this.emit(SocketEvent.SyncFilesResponse, data)
   }
-
-  // public emitSyncPackagesRequest(data: EmitParameter<SyncFilesRequestEvent>) {
-  //   this.emit(SocketEvent.SyncFilesRequest, data)
-  // }
-
-  // public emitSyncPackagesResponse(data: EmitParameter<SyncFilesResponseEvent>) {
-  //   this.emit(SocketEvent.SyncFilesResponse, data)
-  // }
 
   public emitPackageAddEvent(data: EmitParameter<PackageAddEvent>) {
     this.emit(SocketEvent.PackageAdd, data)

@@ -11,6 +11,7 @@ export class SFCFile extends BaseFile {
   public template: Document
   public script: Document
   public style: Document
+  public type = 'sfc'
 
   public compiled = {
     js: '',
@@ -36,6 +37,21 @@ export class SFCFile extends BaseFile {
       language: 'css',
       initialContent: options.initialStyleContent,
     })
+  }
+
+  public exportDocuments() {
+    return {
+      template: this.template.export(),
+      script: this.script.export(),
+      style: this.style.export(),
+    }
+  }
+
+  public importDocuments(imports: any) {
+    console.log('Dogin imports for', this.filename, imports)
+    this.template.import(imports.template)
+    this.script.import(imports.script)
+    this.style.import(imports.style)
   }
 
   public override toString() {

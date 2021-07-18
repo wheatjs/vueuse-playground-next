@@ -12,6 +12,7 @@ export class BaseFile {
   public filename: string
   public isProtected: boolean
   public hide: boolean
+  public type = 'base'
   protected _onUpdate: ((filename: string) => void) | undefined
 
   constructor(options: FileOptions) {
@@ -19,6 +20,14 @@ export class BaseFile {
     this.isProtected = options.isProtected || false
     this._onUpdate = options.onUpdate
     this.hide = options.hide || false
+  }
+
+  public exportDocuments() {
+
+  }
+
+  public importDocuments(imports: any) {
+
   }
 
   public get content() {

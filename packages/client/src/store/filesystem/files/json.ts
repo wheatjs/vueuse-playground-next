@@ -7,6 +7,7 @@ export interface JsonFileOptions extends FileOptions {
 
 export class JsonFile extends BaseFile {
   public json: Document
+  public type = 'json'
 
   constructor(options: JsonFileOptions) {
     super(options)
@@ -16,6 +17,14 @@ export class JsonFile extends BaseFile {
       language: 'json',
       initialContent: options.initialJsonContent,
     })
+  }
+
+  public exportDocuments() {
+    return { json: this.json.export() }
+  }
+
+  public importDocuments(imports: any) {
+    this.json.import(imports.json)
   }
 
   public override toString() {

@@ -1,7 +1,7 @@
 import { createEventHook } from '@vueuse/core'
 import mainJsTemplate from './templates/main?raw'
 import settingsTemplate from './templates/settings?raw'
-import { BaseFile, JsonFile, SFCFile } from '~/store/filesystem/files'
+import { BaseFile, JsonFile, SFCFile, CssFile } from '~/store/filesystem/files'
 import { compileFile } from '~/preview/compiler'
 import { ScriptFile } from '~/store/filesystem/files/script'
 
@@ -14,7 +14,9 @@ export interface FSFile {
 }
 export const SUPPORTED_EXTENSIONS = ['vue', 'css', 'json', 'js']
 
-export const shouldUpdatePreviewHook = createEventHook<void>()
+const shouldUpdatePreviewHook = createEventHook<void>()
+const onFileCreatedHook = createEventHook<string>()
+const onFileDeletedHook = createEventHook<string>()
 
 interface FS {
   files: FSFile[]
@@ -50,7 +52,7 @@ export const fs = reactive<FS>({
  * each document having an automerge instance and a monaco model.
  */
 class Filesystem {
-  public files: Record<string, BaseFile | ScriptFile | SFCFile> = {
+  public files: Record<string, BaseFile | ScriptFile | SFCFile | CssFile | JsonFile> = {
     'main.js': new ScriptFile({
       filename: 'main.js',
       isProtected: true,
@@ -89,7 +91,12 @@ class Filesystem {
       setTimeout(() => shouldUpdatePreviewHook.trigger(), 0)
     }
 
-    fs.settings = JSON.parse(this.files['settings.json'].toString())
+    try {
+      fs.settings = JSON.parse(this.files['settings.json'].toString())
+    }
+    catch (error) {
+      console.log('Invalid JSON format in settings.json')
+    }
     fs.currentFilename = this.currentFilename
     fs.files = Object.values(this.files).map(file => ({
       filename: file.filename,
@@ -105,6 +112,9 @@ class Filesystem {
     this.files[file.filename] = file
     this.onUpdate(file.filename)
     fs.filenames = Object.keys(this.files)
+    onFileCreatedHook.trigger(file.filename)
+
+    return this.files[file.filename]
   }
 
   public deleteFile(filename: string) {
@@ -113,6 +123,24 @@ class Filesystem {
     delete this.files[filename]
     this.onUpdate()
     fs.filenames = Object.keys(this.files)
+    onFileDeletedHook.trigger(filename)
+  }
+
+  /**
+   * Since each file can contain multiple documents, this methed will
+   * return all the documents in each file type.
+   */
+  public get documents() {
+    return Object.values(this.files).map(file => this.getDocumentsFromFile(file)).flat()
+  }
+
+  public getDocumentsFromFile(file: BaseFile) {
+    if (file instanceof SFCFile) return [file.script, file.style, file.template]
+    if (file instanceof ScriptFile) return [file.script]
+    if (file instanceof CssFile) return [file.css]
+    if (file instanceof JsonFile) return [file.json]
+
+    return []
   }
 
   // @ts-ignore
@@ -124,7 +152,56 @@ class Filesystem {
     this.currentFilename = filename
     this.onUpdate()
   }
+
+  private exportFile(file: BaseFile) {
+    return {
+      filename: file.filename,
+      type: file.type,
+      hide: file.hide,
+      isProtected: file.isProtected,
+      documents: file.exportDocuments(),
+    }
+  }
+
+  private importFile(file) {
+    console.log(file)
+    if (file.filename in this.files) {
+      this.files[file.filename].importDocuments(file.documents)
+      return
+    }
+
+    if (file.type === 'sfc') {
+      // const f = this.createFile(new SFCFile({}))
+      // this.files[file.name] = new SFCFile(file)
+      // this.files[file.name].importDocuments(file.documents)
+    }
+    else if (file.type === 'script') {
+      // this.files[file.name] = new ScriptFile(file)
+      // this.files[file.name].importDocuments(file.documents)
+    }
+    else if (file.type === 'css') {
+      // this.files[file.name] = new CssFile(file)
+      // this.files[file.name].importDocuments(file.documents)
+    }
+    else if (file.type === 'json') {
+      // this.files[file.name] = new JsonFile(file)
+      // this.files[file.name].importDocuments(file.documents)
+    }
+  }
+
+  public saveFiles() {
+    return Object.values(this.files).map(file => this.exportFile(file))
+  }
+
+  public loadFiles(files: any[]) {
+    files.forEach((file) => {
+      this.importFile(file)
+    })
+  }
 }
 
 export const filesystem = new Filesystem()
 export const shouldUpdatePreview = shouldUpdatePreviewHook.on
+
+export const onFileCreated = onFileCreatedHook.on
+export const onFileDeleted = onFileDeletedHook.on

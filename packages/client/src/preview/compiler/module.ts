@@ -22,8 +22,6 @@ export function compileModulesForPreview() {
     return [
       ...postImports,
       ...preImports,
-      // ...processFile().reverse(),
-      // ...processFile(filesystem.files['main.js']).reverse(),
     ]
   }
 

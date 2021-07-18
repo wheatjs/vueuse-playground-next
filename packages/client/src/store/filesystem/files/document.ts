@@ -1,5 +1,6 @@
 import automerge from 'automerge'
 import * as monaco from 'monaco-editor'
+import { createEventHook } from '@vueuse/core'
 
 interface DocumentOptions {
   onUpdate?: () => void
@@ -8,14 +9,14 @@ interface DocumentOptions {
 }
 
 export class Document {
-  // We don't always want to react to changes from the model being updated
-  // so we use this to ignore the update
   public name: string
   public model: monaco.editor.ITextModel
   public doc: any
   private onUpdate: any
-
+  private onDocumentChangeHook = createEventHook<{ name: string; changes: automerge.BinaryChange[]}>()
   private shouldIgnoreModelUpdate = false
+
+  public onDocumentChange = this.onDocumentChangeHook.on
 
   constructor(name: string, options: DocumentOptions) {
     this.name = name
@@ -23,31 +24,39 @@ export class Document {
     this.doc = automerge.from({ text: new automerge.Text(options.initialContent) })
     this.onUpdate = options.onUpdate
 
+    this.onDocumentChange = this.onDocumentChange.bind(this)
+    this.onReceiveDocumentChanges = this.onReceiveDocumentChanges.bind(this)
+    this.updateModelFromPatch = this.updateModelFromPatch.bind(this)
+    this.import = this.import.bind(this)
+    this.export = this.export.bind(this)
+
     this.model.onDidChangeContent((e) => {
       if (this.shouldIgnoreModelUpdate)
         return
 
       // When the model content is changed, we need to update the document
-      let _change_doc = this.doc
+      // let _change_doc = null
+      const _change = e.changes[0]
 
-      e.changes.forEach((change) => {
-        _change_doc = automerge.change(_change_doc, (doc: { text: automerge.Text }) => {
-          if (!doc.text)
-            doc.text = new automerge.Text()
+      // e.changes.forEach((change) => {
+      const _change_doc = automerge.change(this.doc, (_doc: { text: automerge.Text }) => {
+        if (!_doc.text)
+          _doc.text = new automerge.Text()
 
-          if (change.text.length > 0) {
-            doc.text.deleteAt!(change.rangeOffset, change.rangeLength)
-            doc.text.insertAt!(change.rangeOffset, ...change.text)
-          }
-          else {
-            doc.text.deleteAt!(change.rangeOffset, change.rangeLength)
-          }
-        })
+        if (_change.text.length > 0) {
+          _doc.text.deleteAt!(_change.rangeOffset, _change.rangeLength)
+          _doc.text.insertAt!(_change.rangeOffset, ..._change.text)
+        }
+        else {
+          _doc.text.deleteAt!(_change.rangeOffset, _change.rangeLength)
+        }
       })
+      // })
 
       // Now publish the changes in _change_doc
       const changes = automerge.getChanges(this.doc, _change_doc)
       this.doc = _change_doc // Assign the current doc to the changed doc.
+
       this.publishDocumentChanges(changes)
       this.publishUpdates()
     })
@@ -58,13 +67,21 @@ export class Document {
    */
   public publishDocumentChanges(changes: automerge.BinaryChange[]) {
     // TODO Publish changes from this
+    this.onDocumentChangeHook.trigger({ name: this.name, changes: new Blob(changes) })
   }
 
   /**
    * Called whenever a document recives changes
    */
-  public onReceiveDocumentChanges() {
+  public async onReceiveDocumentChanges(changes: any) {
+    changes = await new Response(changes).arrayBuffer()
+    changes = new Uint8Array(changes)
 
+    const documentChangeResult = automerge.applyChanges(this.doc, [changes])
+    this.doc = documentChangeResult[0]
+    const patches = documentChangeResult[1]
+    this.updateModelFromPatch(patches)
+    this.publishUpdates()
   }
 
   private publishUpdates() {
@@ -132,5 +149,20 @@ export class Document {
 
   public get text(): string {
     return this.doc.text.toString()
+  }
+
+  public export() {
+    return new Blob(automerge.getAllChanges(this.doc))
+  }
+
+  public async import(data: any) {
+    data = await new Response(data).arrayBuffer()
+    data = new Uint8Array(data)
+
+    this.model.setValue('')
+    this.doc = automerge.init()
+    const x = automerge.applyChanges(this.doc, [data])
+    this.doc = x[0]
+    this.updateModelFromPatch(x[1])
   }
 }

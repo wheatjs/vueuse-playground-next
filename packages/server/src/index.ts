@@ -12,7 +12,7 @@ export async function main() {
     },
   })
 
-  await registerRoutes(app)
+  // await registerRoutes(app)
   await registerSockets(io)
 
   app.listen(process.env.port || 4000, (e, address) => {
