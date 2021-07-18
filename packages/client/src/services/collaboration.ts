@@ -6,6 +6,8 @@ import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
 import { ScriptFile, SFCFile } from '~/store/filesystem/files'
 
+const COLLABORATION_URL = (import.meta.env.VITE_COLLABORATION_SERVER as string) || 'ws://localhost:4000'
+
 type EmitParameter<T> = Omit<T, 'sender' | 'timestamp'>
 
 export interface FileEditor {
@@ -30,7 +32,7 @@ export class CollaborationManager {
 
   public connect(session?: string) {
     if (!this.client) {
-      this.client = io('ws://localhost:4000', {
+      this.client = io(COLLABORATION_URL, {
         // @ts-ignore
         query: {
           ...removeEmpty({
