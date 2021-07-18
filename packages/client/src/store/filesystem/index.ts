@@ -1,7 +1,7 @@
 import { createEventHook } from '@vueuse/core'
 import mainJsTemplate from './templates/main?raw'
 import settingsTemplate from './templates/settings?raw'
-import { BaseFile, SFCFile } from '~/store/filesystem/files'
+import { BaseFile, JsonFile, SFCFile } from '~/store/filesystem/files'
 import { compileFile } from '~/preview/compiler'
 import { ScriptFile } from '~/store/filesystem/files/script'
 
@@ -12,21 +12,30 @@ export interface FSFile {
   content: string
   compiled: any
 }
-
 export const SUPPORTED_EXTENSIONS = ['vue', 'css', 'json', 'js']
 
 export const shouldUpdatePreviewHook = createEventHook<void>()
+
+interface FS {
+  files: FSFile[]
+  currentFilename: string
+  errors: (Error | string)[]
+  runtimeErrors: (Error | string)[]
+  filenames: string[]
+  settings: any
+}
 
 /**
  * Although we can't use reactivity directly on our virtual filesystem,
  * we can "proxy" our reactive object to make some things a little easier
  */
-export const fs = reactive<{ files: FSFile[]; currentFilename: string; errors: (Error | string)[]; runtimeErrors: (Error | string)[]; filenames: string[] }>({
+export const fs = reactive<FS>({
   files: [],
   currentFilename: '',
   errors: [],
   runtimeErrors: [],
   filenames: [],
+  settings: {},
 })
 
 /**
@@ -54,11 +63,12 @@ class Filesystem {
       isProtected: true,
       onUpdate: filename => this.onUpdate(filename),
     }),
-    'settings.js': new ScriptFile({
-      filename: 'settings.js',
+    'settings.json': new JsonFile({
+      filename: 'settings.json',
       isProtected: true,
       hide: true,
-      initialScriptContent: settingsTemplate,
+      initialJsonContent: settingsTemplate,
+      onUpdate: () => this.onUpdate('App.vue'),
     }),
   }
 
@@ -79,6 +89,7 @@ class Filesystem {
       setTimeout(() => shouldUpdatePreviewHook.trigger(), 0)
     }
 
+    fs.settings = JSON.parse(this.files['settings.json'].toString())
     fs.currentFilename = this.currentFilename
     fs.files = Object.values(this.files).map(file => ({
       filename: file.filename,

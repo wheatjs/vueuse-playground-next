@@ -1,7 +1,11 @@
 import { Processor } from 'windicss/lib'
 import { HTMLParser } from 'windicss/utils/parser'
+import { fs } from '~/store/filesystem'
 
 export function generateStyles(html: string) {
+  if (!fs.settings.windicss.enabled)
+    return ''
+
   // Get windi processor
   const allowList = [
     'dark:text-light-300',
@@ -13,6 +17,7 @@ export function generateStyles(html: string) {
 
   const processor = new Processor({
     darkMode: 'class',
+    attributify: true,
   })
 
   // Parse all classes and put into one line to simplify operations
@@ -63,10 +68,9 @@ export function generateStyles(html: string) {
   // Build styles
   const APPEND = false
   const MINIFY = false
-  const styles = attrsSheet.styleSheet
-    .extend(interpretedSheet)
-    .extend(preflightSheet, APPEND)
-    .build(MINIFY)
+  const styles = fs.settings.windicss?.attributify
+    ? attrsSheet.styleSheet.extend(interpretedSheet).extend(preflightSheet, APPEND).build(MINIFY)
+    : interpretedSheet.extend(preflightSheet, APPEND).build(MINIFY)
 
   return styles
 }
