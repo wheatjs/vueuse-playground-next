@@ -34,26 +34,21 @@ export class Document {
       if (this.shouldIgnoreModelUpdate)
         return
 
-      // When the model content is changed, we need to update the document
-      // let _change_doc = null
-      const _change = e.changes[0]
-
-      // e.changes.forEach((change) => {
       const _change_doc = automerge.change(this.doc, (_doc: { text: automerge.Text }) => {
         if (!_doc.text)
           _doc.text = new automerge.Text()
 
-        if (_change.text.length > 0) {
-          _doc.text.deleteAt!(_change.rangeOffset, _change.rangeLength)
-          _doc.text.insertAt!(_change.rangeOffset, ..._change.text)
-        }
-        else {
-          _doc.text.deleteAt!(_change.rangeOffset, _change.rangeLength)
+        for (const _change of e.changes) {
+          if (_change.text.length > 0) {
+            _doc.text.deleteAt!(_change.rangeOffset, _change.rangeLength)
+            _doc.text.insertAt!(_change.rangeOffset, ..._change.text)
+          }
+          else {
+            _doc.text.deleteAt!(_change.rangeOffset, _change.rangeLength)
+          }
         }
       })
-      // })
 
-      // Now publish the changes in _change_doc
       const changes = automerge.getChanges(this.doc, _change_doc)
       this.doc = _change_doc // Assign the current doc to the changed doc.
 
