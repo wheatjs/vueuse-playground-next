@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client'
 import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent, CollaboratorDisconnetEvent, FileAddEvent, FileDeleteEvent, DocumentChangeEvent } from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, fs } from '~/store'
-import { editors } from '~/store/editors'
+// import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
 import { ScriptFile, SFCFile } from '~/store/filesystem/files'
 

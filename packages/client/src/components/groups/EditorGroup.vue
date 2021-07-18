@@ -50,7 +50,7 @@ const type = computed(() => {
 <template>
   <div h="full">
     <EditorTabs />
-    <div ref="target" class="calc-height">
+    <div class="calc-height">
       <Splitpanes horizontal>
         <Pane>
           <Container class="!rounded-t-none">

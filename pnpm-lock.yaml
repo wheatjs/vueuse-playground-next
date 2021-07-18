@@ -125,6 +125,7 @@ importers:
       esno: ^0.7.3
       express: ^4.17.1
       fastify: ^3.19.1
+      fastify-cors: ^6.0.2
       fastify-websocket: ^3.2.0
       firebase-admin: ^9.10.0
       nanoid: ^3.1.23
@@ -138,6 +139,7 @@ importers:
       esno: 0.7.3
       express: 4.17.1
       fastify: 3.19.1
+      fastify-cors: 6.0.2
       fastify-websocket: 3.2.0
       firebase-admin: 9.10.0
       nanoid: 3.1.23
@@ -4386,6 +4388,13 @@ packages:
 
   /fast-text-encoding/1.0.3:
     resolution: {integrity: sha512-dtm4QZH9nZtcDt8qJiOH9fcQd1NAgi+K1O2DbE6GG1PPCK/BWfOH3idCTRQ4ImXRUOyopDEgDEnVEE7Y/2Wrig==}
+    dev: false
+
+  /fastify-cors/6.0.2:
+    resolution: {integrity: sha512-sE0AOyzmj5hLLRRVgenjA6G2iOGX35/1S3QGYB9rr9TXelMZB3lFrXy4CzwYVOMiujJeMiLgO4J7eRm8sQSv8Q==}
+    dependencies:
+      fastify-plugin: 3.0.0
+      vary: 1.1.2
     dev: false
 
   /fastify-error/0.3.1:
