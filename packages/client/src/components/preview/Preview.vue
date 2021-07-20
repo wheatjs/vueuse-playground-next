@@ -9,6 +9,8 @@ import { isDark } from '~/hooks'
 const container = ref()
 const runtimeError = ref()
 const runtimeWarning = ref()
+const enableSameOrigin = ref(false)
+
 let sandbox: HTMLIFrameElement
 let proxy: PreviewProxy
 let stopUpdateWatcher: WatchStopHandle
@@ -17,6 +19,13 @@ const packages = usePackages()
 
 watch([runtimeError, runtimeWarning], () => {
   store.runtimeErrors = [runtimeError.value, runtimeWarning.value].filter(x => x)
+})
+
+const shouldDisplaySameOriginError = computed(() => {
+  if (store.runtimeErrors.some(message => message.toString() === 'Failed to read the \'localStorage\' property from \'Window\': The document is sandboxed and lacks the \'allow-same-origin\' flag.'))
+    return true
+
+  return false
 })
 
 // create sandbox on mount
@@ -52,7 +61,7 @@ watch(() => packages.importMap, (importMap, prev) => {
   }
 }, { deep: true })
 // reset sandbox when version changes
-watch(vueRuntimeUrl, createSandbox)
+watch([vueRuntimeUrl, enableSameOrigin], createSandbox)
 onUnmounted(() => {
   proxy.destroy()
   stopUpdateWatcher && stopUpdateWatcher()
@@ -70,7 +79,8 @@ function createSandbox() {
     'allow-modals',
     'allow-pointer-lock',
     'allow-popups',
-    'allow-same-origin',
+    enableSameOrigin.value ? 'allow-same-origin' : null,
+    // 'allow-same-origin',
     'allow-scripts',
     'allow-top-navigation-by-user-activation',
   ].join(' '))
@@ -146,6 +156,7 @@ function createSandbox() {
     ;({ off: stopUpdateWatcher } = shouldUpdatePreview(() => {
       updatePreview()
     }))
+    updatePreview()
   })
 }
 async function updatePreview() {
@@ -197,14 +208,40 @@ async function updatePreview() {
 </script>
 
 <template>
-  <div
-    ref="container"
-    w="full"
-    h="full"
-    flex="~"
-    class="preview-container"
-    place="items-center content-center"
-  ></div>
+  <div position="relative" h="full">
+    <div
+      ref="container"
+      w="full"
+      h="full"
+      flex="~"
+      class="preview-container"
+      place="items-center content-center"
+    ></div>
+    <div
+      v-if="shouldDisplaySameOriginError"
+      position="absolute inset-0"
+      bg="dark-900"
+      grid="~"
+      place="items-center content-center"
+      space="y-4"
+    >
+      <carbon-warning-alt w="16" h="16" text="yellow-500" />
+      <div class="prose" text="center dark:(light-900 opacity-70)" font="medium">
+        This playground needs access to localstorage, indexdb, and cookies on this domain. Make sure you trust this
+        code before allowing access.
+      </div>
+      <div flex="~ row" space="x-2">
+        <Button small>
+          <ic-round-open-in-new />
+          Learn More
+        </Button>
+        <Button small warn @click="enableSameOrigin = true">
+          <carbon-checkmark />
+          Allow
+        </Button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style>

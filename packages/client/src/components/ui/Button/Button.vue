@@ -9,6 +9,7 @@ const props = defineProps<{
   primary?: boolean
   small?: boolean
   large?: boolean
+  warn?: boolean
 }>()
 
 const is = computed(() => props.to ? 'router-link' : props.href ? 'a' : 'button')
@@ -32,14 +33,17 @@ const computedProps = reactivePick(props, 'to', 'href')
       'h-12 px-4 text-xl': large,
       'h-10 px-4 text-base': !small && !large,
       'bg-green-400 hover:bg-green-300 focus-visible:bg-green-300': primary,
-      'bg-light-600 hover:bg-light-900 focus-visible:bg-light-900 dark:(bg-dark-500 hover:bg-dark-900 focus-visible:bg-dark-900)': !primary
+      'bg-yellow-400 hover:bg-yellow-300 focus-visible:bg-yellow-300 text-yellow-900': warn,
+      'bg-light-600 hover:bg-light-900 focus-visible:bg-light-900 dark:(bg-dark-500 hover:bg-dark-900 focus-visible:bg-dark-900)': !primary && !warn
     }"
   >
     <div
       :class="{
         'text-green-900': primary,
-        'text-dark-100 text-opacity-70 dark:text-light-900': !primary
+        'text-yellow-900': warn,
+        'text-dark-100 text-opacity-70 dark:text-light-900': !primary && !warn
       }"
+      class="text-current"
       w="full"
       h="full"
       flex="~"
