@@ -10,6 +10,19 @@
 	</style>
 	<style id="__sfc-styles"></style>
 	<script>
+		if (window.indexedDB)
+		  delete window.indexedDB
+
+		if (window.mozIndexedDB)
+		  delete window.mozIndexedDB
+
+		if (window.webkitIndexedDB)
+		  delete window.webkitIndexedDB
+
+		if (window.msIndexedDB)
+		  delete msIndexedDB
+
+		// window.indexedDB = window.mozIndexedDB = window.webkitIndexedDB = window.msIndexedDB
 		window.process = { env: {} }
 	</script>
 	<script>

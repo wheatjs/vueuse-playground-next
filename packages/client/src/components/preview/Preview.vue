@@ -9,7 +9,6 @@ import { isDark } from '~/hooks'
 const container = ref()
 const runtimeError = ref()
 const runtimeWarning = ref()
-const enableSameOrigin = ref(false)
 
 let sandbox: HTMLIFrameElement
 let proxy: PreviewProxy
@@ -19,13 +18,6 @@ const packages = usePackages()
 
 watch([runtimeError, runtimeWarning], () => {
   store.runtimeErrors = [runtimeError.value, runtimeWarning.value].filter(x => x)
-})
-
-const shouldDisplaySameOriginError = computed(() => {
-  if (store.runtimeErrors.some(message => message.toString() === 'Failed to read the \'localStorage\' property from \'Window\': The document is sandboxed and lacks the \'allow-same-origin\' flag.'))
-    return true
-
-  return false
 })
 
 // create sandbox on mount
@@ -61,7 +53,7 @@ watch(() => packages.importMap, (importMap, prev) => {
   }
 }, { deep: true })
 // reset sandbox when version changes
-watch([vueRuntimeUrl, enableSameOrigin], createSandbox)
+watch([vueRuntimeUrl], createSandbox)
 onUnmounted(() => {
   proxy.destroy()
   stopUpdateWatcher && stopUpdateWatcher()
@@ -79,8 +71,8 @@ function createSandbox() {
     'allow-modals',
     'allow-pointer-lock',
     'allow-popups',
-    enableSameOrigin.value ? 'allow-same-origin' : null,
-    // 'allow-same-origin',
+    // enableSameOrigin.value ? 'allow-same-origin' : null,\
+    'allow-same-origin',
     'allow-scripts',
     'allow-top-navigation-by-user-activation',
   ].join(' '))
@@ -217,7 +209,7 @@ async function updatePreview() {
       class="preview-container"
       place="items-center content-center"
     ></div>
-    <div
+    <!-- <div
       v-if="shouldDisplaySameOriginError"
       position="absolute inset-0"
       bg="dark-900"
@@ -240,7 +232,7 @@ async function updatePreview() {
           Allow
         </Button>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
