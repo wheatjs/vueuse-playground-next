@@ -164,7 +164,6 @@ class Filesystem {
   }
 
   private importFile(file) {
-    console.log(file)
     if (file.filename in this.files) {
       this.files[file.filename].importDocuments(file.documents)
       return

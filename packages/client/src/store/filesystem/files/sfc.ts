@@ -48,7 +48,6 @@ export class SFCFile extends BaseFile {
   }
 
   public importDocuments(imports: any) {
-    console.log('Dogin imports for', this.filename, imports)
     this.template.import(imports.template)
     this.script.import(imports.script)
     this.style.import(imports.style)

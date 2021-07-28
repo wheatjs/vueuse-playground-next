@@ -15,11 +15,13 @@ export class Document {
   private onUpdate: any
   private onDocumentChangeHook = createEventHook<{ name: string; changes: automerge.BinaryChange[]}>()
   private shouldIgnoreModelUpdate = false
+  private language: string | undefined
 
   public onDocumentChange = this.onDocumentChangeHook.on
 
   constructor(name: string, options: DocumentOptions) {
     this.name = name
+    this.language = options.language
     this.model = monaco.editor.createModel(options.initialContent || '', options.language)
     this.doc = automerge.from({ text: new automerge.Text(options.initialContent) })
     this.onUpdate = options.onUpdate
@@ -29,7 +31,10 @@ export class Document {
     this.updateModelFromPatch = this.updateModelFromPatch.bind(this)
     this.import = this.import.bind(this)
     this.export = this.export.bind(this)
+    this.bindModel()
+  }
 
+  public bindModel() {
     this.model.onDidChangeContent((e) => {
       if (this.shouldIgnoreModelUpdate)
         return
@@ -154,10 +159,11 @@ export class Document {
     data = await new Response(data).arrayBuffer()
     data = new Uint8Array(data)
 
-    this.model.setValue('')
-    this.doc = automerge.init()
-    const x = automerge.applyChanges(this.doc, [data])
+    const doc = automerge.init()
+    const x = automerge.applyChanges(doc, [data])
     this.doc = x[0]
-    this.updateModelFromPatch(x[1])
+    this.shouldIgnoreModelUpdate = true
+    this.model.setValue(this.text)
+    this.shouldIgnoreModelUpdate = false
   }
 }

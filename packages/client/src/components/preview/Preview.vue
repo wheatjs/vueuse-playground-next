@@ -53,7 +53,7 @@ watch(() => packages.importMap, (importMap, prev) => {
   }
 }, { deep: true })
 // reset sandbox when version changes
-watch([vueRuntimeUrl], createSandbox)
+watch([vueRuntimeUrl, isDark], createSandbox)
 onUnmounted(() => {
   proxy.destroy()
   stopUpdateWatcher && stopUpdateWatcher()

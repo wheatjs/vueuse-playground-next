@@ -4,7 +4,7 @@ import { editor as Editor } from 'monaco-editor'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, fs } from '~/store'
 // import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
-import { ScriptFile, SFCFile } from '~/store/filesystem/files'
+import { JsonFile, ScriptFile, SFCFile } from '~/store/filesystem/files'
 
 const COLLABORATION_URL = (import.meta.env.VITE_COLLABORATION_SERVER as string) || 'ws://localhost:4000'
 
@@ -177,7 +177,10 @@ export class CollaborationManager {
     if (type === 'script')
       (filesystem.files[name] as ScriptFile).script.onReceiveDocumentChanges(changes)
 
-    console.log(name, type)
+    if (type === 'json')
+      (filesystem.files[name] as JsonFile).json.onReceiveDocumentChanges(changes)
+
+    // console.log(name, type)
   }
 
   private onSyncFilesRequest({ sender }: SyncFilesRequestEvent) {

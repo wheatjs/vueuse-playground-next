@@ -43,7 +43,6 @@ const computedProps = reactivePick(props, 'to', 'href')
         'text-yellow-900': warn,
         'text-dark-100 text-opacity-70 dark:text-light-900': !primary && !warn
       }"
-      class="text-current"
       w="full"
       h="full"
       flex="~"

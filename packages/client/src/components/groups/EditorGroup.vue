@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Splitpanes, Pane } from 'splitpanes'
-import * as monaco from 'monaco-editor'
 import { useElementBounding } from '@vueuse/core'
+import * as monaco from 'monaco-editor'
 import { fs, filesystem, usePackages } from '~/store'
 import { CssFile, JsonFile, SFCFile, ScriptFile } from '~/store/filesystem/files'
 
