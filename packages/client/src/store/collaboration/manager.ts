@@ -1,7 +1,31 @@
 import { io, Socket } from 'socket.io-client'
-import { SocketEvent, removeEmpty, PackageAddEvent, PackageRemoveEvent, EditorInsertEvent, EditorDeleteEvent, EditorReplaceEvent, EditorCursorEvent, BaseEvent, EditorSelectionEvent, SyncFilesRequestEvent, SyncFilesResponseEvent, SyncCollaboratorsEvent, SFCType, RoomCreatedEvent, RoomJoinedEvent, CollaboratorDisconnetEvent, FileAddEvent, FileDeleteEvent, DocumentChangeEvent } from '@playground/shared'
+import {
+  removeEmpty,
+
+  BaseEvent,
+  SocketEvent,
+  PackageAddEvent,
+  PackageRemoveEvent,
+
+  EditorCursorEvent,
+  EditorSelectionEvent,
+
+  SyncFilesResponseEvent,
+  SyncCollaboratorsEvent,
+
+  RoomCreatedEvent,
+  RoomJoinedEvent,
+
+  CollaboratorDisconnetEvent,
+
+  FileAddEvent,
+  FileDeleteEvent,
+
+  DocumentChangeEvent,
+  SFCType,
+} from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
-import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, fs } from '~/store'
+import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, onFileDeleted } from '~/store'
 // import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
 import { JsonFile, ScriptFile, SFCFile } from '~/store/filesystem/files'
@@ -18,17 +42,12 @@ export interface FileEditor {
 
 export class CollaborationManager {
   private client: Socket
-  private username: string
   private collaboration = useCollaboration()
   private packages = usePackages()
   private fileEditors: FileEditor[] = []
   private hasSynced = false
   private hasAttached = false
-
-  constructor() {
-    this.username = this.collaboration.username
-    // this.client = io('')
-  }
+  private documentListeners: Array<{ off: () => void }> = []
 
   public connect(session?: string) {
     if (!this.client) {
@@ -36,7 +55,7 @@ export class CollaborationManager {
         // @ts-ignore
         query: {
           ...removeEmpty({
-            username: this.username,
+            username: this.collaboration.username,
             session,
           }),
         },
@@ -73,45 +92,21 @@ export class CollaborationManager {
     this.client.on(SocketEvent.CollaboratorDisconnet, (data: CollaboratorDisconnetEvent) => this.onCollaboratorDisconnect(data))
 
     this.client.on(SocketEvent.SyncCollaborators, (data: SyncCollaboratorsEvent) => this.onSyncCollaborators(data))
-    this.client.on(SocketEvent.SyncFilesRequest, (data: SyncFilesRequestEvent) => this.onSyncFilesRequest(data))
+    this.client.on(SocketEvent.SyncFilesRequest, (data: BaseEvent) => this.onSyncFilesRequest(data))
     this.client.on(SocketEvent.SyncFilesResponse, (data: SyncFilesResponseEvent) => this.onSyncFilesResponse(data))
 
     this.client.on(SocketEvent.PackageAdd, (data: PackageAddEvent) => this.onPackageAdd(data))
     this.client.on(SocketEvent.PackageRemove, (data: PackageRemoveEvent) => this.onPackageRemove(data))
 
-    // this.client.on(SocketEvent.EditorInsert, (data: EditorInsertEvent) => this.onEditorInsert(data))
-    // this.client.on(SocketEvent.EditorDelete, (data: EditorDeleteEvent) => this.onEditorDelete(data))
-    // this.client.on(SocketEvent.EditorReplace, (data: EditorReplaceEvent) => this.onEditorReplace(data))
     // this.client.on(SocketEvent.EditorCursor, (data: EditorCursorEvent) => this.onEditorCursor(data))
     // this.client.on(SocketEvent.EditorSelection, (data: EditorSelectionEvent) => this.onEditorSelection(data))
 
-    // this.client.on(SocketEvent.FileAdd, (data: FileAddEvent) => this.onFileAdd(data))
-    // this.client.on(SocketEvent.FileDelete, (data: FileAddEvent) => this.onFileDelete(data))
+    this.client.on(SocketEvent.FileAdd, (data: FileAddEvent) => this.onFileAdd(data))
+    this.client.on(SocketEvent.FileDelete, (data: FileDeleteEvent) => this.onFileDelete(data))
 
     this.client.on(SocketEvent.DocumentChange, (data: DocumentChangeEvent) => this.onDocumentChange(data))
 
-    // Manage Event listeners for documents
-    filesystem.documents.forEach((document) => {
-      document.onDocumentChange(({ name, changes }) => {
-        this.emitDocumentChangeEvent({
-          filename: name,
-          changes,
-        })
-      })
-    })
-
-    onFileCreated((filename) => {
-      filesystem
-        .getDocumentsFromFile(filesystem.files[filename])
-        .forEach((document) => {
-          document.onDocumentChange(({ name, changes }) => {
-            this.emitDocumentChangeEvent({
-              filename: name,
-              changes,
-            })
-          })
-        })
-    })
+    this.attachDocumentListeners()
 
     /**
      * Non-Socket Listeners
@@ -119,11 +114,28 @@ export class CollaborationManager {
     onAddPackage(name => this.emitPackageAddEvent({ name }))
     onRemovePackage(name => this.emitPackageRemoveEvent({ name }))
 
-    // onCreateFile(data => this.emitFileAddEvent({ name: data.filename, script: data.script, template: data.template, style: data.style }))
-    // onDeleteFile(name => this.emitFileDeleteEvent({ name }))
+    onFileCreated((name) => {
+      this.emitFileAddEvent({ file: filesystem.exportFile(filesystem.files[name]) })
+      this.attachDocumentListeners()
+    })
+    onFileDeleted((name) => {
+      this.emitFileDeleteEvent({ name })
+      this.attachDocumentListeners()
+    })
   }
 
-  private emit<T>(name: SocketEvent, payload: Omit<T, 'sender' | 'timestamp'>) {
+  private attachDocumentListeners() {
+    this.documentListeners.forEach(x => x.off())
+    this.documentListeners = filesystem
+      .documents
+      .map((document) => {
+        return document.onDocumentChange(({ name, changes }) => {
+          this.emitDocumentChangeEvent({ filename: name, changes })
+        })
+      })
+  }
+
+  private emit<T>(name: SocketEvent, payload?: Omit<T, 'sender' | 'timestamp'>) {
     this.client.emit(name, {
       sender: this.collaboration.id,
       timestamp: Date.now(),
@@ -131,17 +143,8 @@ export class CollaborationManager {
     } as BaseEvent)
   }
 
-  // private shouldUpdateEditor(filename: string) {
-  //   return filename === playground.activeFilename
-  // }
-
-  private onConnect() {
-    this.collaboration.isConnected = true
-  }
-
-  private onDisconnect() {
-    this.collaboration.isConnected = false
-  }
+  private onConnect() { this.collaboration.isConnected = true }
+  private onDisconnect() { this.collaboration.isConnected = false }
 
   private onCollaboratorDisconnect({ sender }: CollaboratorDisconnetEvent) {
     this.fileEditors.forEach(({ manager }) => {
@@ -159,7 +162,7 @@ export class CollaborationManager {
   private onRoomJoined({ id, session }: RoomJoinedEvent) {
     this.collaboration.id = id
     this.collaboration.session = session
-    this.emitFileSyncRequest({})
+    this.emitFileSyncRequest()
   }
 
   private onSyncCollaborators({ collaborators }: SyncCollaboratorsEvent) {
@@ -179,26 +182,29 @@ export class CollaborationManager {
 
     if (type === 'json')
       (filesystem.files[name] as JsonFile).json.onReceiveDocumentChanges(changes)
-
-    // console.log(name, type)
   }
 
-  private onSyncFilesRequest({ sender }: SyncFilesRequestEvent) {
+  private onSyncFilesRequest({ sender }: BaseEvent) {
     this.emitFileSyncResponse({
       to: sender,
-      files: filesystem.saveFiles(),
+      activeFilename: filesystem.currentFile.filename,
+      files: filesystem.exportFiles(),
     })
   }
 
-  private onSyncFilesResponse({ activeFilename, files }: SyncFilesResponseEvent) {
-    console.log('File Sync Response')
-    filesystem.loadFiles(files)
-    // importFiles({
-    //   files,
-    //   activeFilename,
-    // })
+  private onSyncFilesResponse({ files }: SyncFilesResponseEvent) {
+    filesystem.importFiles(files)
+    this.attachDocumentListeners()
+  }
 
-    // setTimeout(() => this.hasSynced = true, 100)
+  private onFileAdd({ file }: FileAddEvent) {
+    filesystem.importFile(file)
+    this.attachDocumentListeners()
+  }
+
+  private onFileDelete({ name }: FileDeleteEvent) {
+    // console.log('Deleted file', name)
+    filesystem.deleteFile(name, true)
   }
 
   private onPackageAdd({ name }: PackageAddEvent) {
@@ -213,8 +219,8 @@ export class CollaborationManager {
     this.emit(SocketEvent.DocumentChange, data)
   }
 
-  public emitFileSyncRequest(data: EmitParameter<SyncFilesRequestEvent>) {
-    this.emit(SocketEvent.SyncFilesRequest, data)
+  public emitFileSyncRequest() {
+    this.emit(SocketEvent.SyncFilesRequest)
   }
 
   public emitFileSyncResponse(data: EmitParameter<SyncFilesResponseEvent>) {
@@ -227,27 +233,6 @@ export class CollaborationManager {
 
   public emitPackageRemoveEvent(data: EmitParameter<PackageRemoveEvent>) {
     this.emit(SocketEvent.PackageRemove, data)
-  }
-
-  public emitEditorInsertEvent(data: EmitParameter<EditorInsertEvent>) {
-    if (!this.hasSynced || this.collaboration.suppressContentEvent)
-      return
-
-    this.emit(SocketEvent.EditorInsert, data)
-  }
-
-  public emitEditorDeleteEvent(data: EmitParameter<EditorDeleteEvent>) {
-    if (!this.hasSynced || this.collaboration.suppressContentEvent)
-      return
-
-    this.emit(SocketEvent.EditorDelete, data)
-  }
-
-  public emitEditorReplaceEvent(data: EmitParameter<EditorReplaceEvent>) {
-    if (!this.hasSynced || this.collaboration.suppressContentEvent)
-      return
-
-    this.emit(SocketEvent.EditorReplace, data)
   }
 
   public emitEditorCursorEvent(data: EmitParameter<EditorCursorEvent>) {
@@ -265,20 +250,13 @@ export class CollaborationManager {
   }
 
   public emitFileAddEvent(data: EmitParameter<FileAddEvent>) {
-    if (!this.hasSynced)
-      return
-
     this.emit(SocketEvent.FileAdd, data)
   }
 
   public emitFileDeleteEvent(data: EmitParameter<FileDeleteEvent>) {
-    if (!this.hasSynced)
-      return
+    // if (!this.hasSynced)
+    //   return
 
     this.emit(SocketEvent.FileDelete, data)
-  }
-
-  private getUsernameById(id: string) {
-    return this.collaboration.collaborators.find(user => user.id === id)?.username || id
   }
 }

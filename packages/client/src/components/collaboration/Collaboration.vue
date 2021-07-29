@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router'
 import { useClipboard } from '@vueuse/core'
 import { useCollaboration } from '~/store'
-import { CollaborationManager } from '~/services/collaboration'
+import { CollaborationManager } from '~/store/collaboration'
 
 const route = useRoute()
 const manager = new CollaborationManager()

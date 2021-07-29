@@ -10,5 +10,8 @@ import { fs } from '~/store/filesystem'
     <PreviewMessage v-for="error in fs.runtimeErrors" :key="error.toString()" type="error">
       {{ error.toString() }}
     </PreviewMessage>
+    <PreviewMessage v-for="error in fs.compilerErrors" :key="error.toString()" type="error">
+      {{ error.toString() }}
+    </PreviewMessage>
   </div>
 </template>

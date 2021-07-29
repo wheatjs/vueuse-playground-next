@@ -16,9 +16,6 @@ export enum SocketEvent {
 
   DocumentChange = 'document-change',
 
-  EditorInsert = 'editor-insert',
-  EditorDelete = 'editor-delete',
-  EditorReplace = 'editor-replace',
   EditorCursor = 'editor-cursor',
   EditorSelection = 'editor-selection',
 
@@ -82,8 +79,8 @@ export interface SyncCollaboratorsEvent extends BaseEvent {
   collaborators: Collaborator[]
 }
 
-export interface SyncFilesRequestEvent extends BaseEvent {
-
+export interface SyncFilesRequestEvent<T> extends BaseEvent {
+  files: T
 }
 
 export interface DocumentChangeEvent extends BaseEvent {
@@ -93,22 +90,7 @@ export interface DocumentChangeEvent extends BaseEvent {
 
 export interface SyncFilesResponseEvent extends BaseEvent, FileExports {
   to: string
-}
-
-export interface EditorInsertEvent extends FileOperationEvent {
-  text: string
-  index: number
-}
-
-export interface EditorDeleteEvent extends FileOperationEvent {
-  index: number
-  length: number
-}
-
-export interface EditorReplaceEvent extends FileOperationEvent {
-  index: number
-  length: number
-  text: string
+  files: any[]
 }
 
 export interface EditorCursorEvent extends FileOperationEvent {
@@ -121,10 +103,7 @@ export interface EditorSelectionEvent extends FileOperationEvent {
 }
 
 export interface FileAddEvent extends BaseEvent {
-  name: string
-  template: string
-  script: string
-  style: string
+  file: any
 }
 
 export interface FileRenameEvent extends BaseEvent {

@@ -39,7 +39,11 @@ export class SFCFile extends BaseFile {
     })
   }
 
-  public exportDocuments() {
+  public override get documents() {
+    return [this.script, this.style, this.template]
+  }
+
+  public override exportDocuments() {
     return {
       template: this.template.export(),
       script: this.script.export(),
@@ -47,7 +51,7 @@ export class SFCFile extends BaseFile {
     }
   }
 
-  public importDocuments(imports: any) {
+  public override importDocuments(imports: any) {
     this.template.import(imports.template)
     this.script.import(imports.script)
     this.style.import(imports.style)

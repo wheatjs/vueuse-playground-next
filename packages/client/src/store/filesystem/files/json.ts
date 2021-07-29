@@ -19,11 +19,15 @@ export class JsonFile extends BaseFile {
     })
   }
 
-  public exportDocuments() {
+  public override get documents() {
+    return [this.json]
+  }
+
+  public override exportDocuments() {
     return { json: this.json.export() }
   }
 
-  public importDocuments(imports: any) {
+  public override importDocuments(imports: any) {
     this.json.import(imports.json)
   }
 

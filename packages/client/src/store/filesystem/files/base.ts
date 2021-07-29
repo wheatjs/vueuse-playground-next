@@ -1,3 +1,5 @@
+import { Document } from './document'
+
 export interface FileOptions {
   filename: string
   hide?: boolean
@@ -22,8 +24,12 @@ export class BaseFile {
     this.hide = options.hide || false
   }
 
-  public exportDocuments() {
+  public get documents(): Document[] {
+    return []
+  }
 
+  public exportDocuments(): Record<string, Blob> {
+    return {}
   }
 
   public importDocuments(imports: any) {

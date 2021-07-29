@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
 import { Collaborator, randomUsername } from '@playground/shared'
 
-interface UseCollaborationState {
+export { CollaborationManager } from './manager'
+
+export interface UseCollaborationState {
   id: string | null
   username: string
   session: string | null
   isConnected: boolean
   isDialogOpen: boolean
   collaborators: Collaborator[]
-  suppressContentEvent: boolean
 }
 
 export const useCollaboration = defineStore({
@@ -20,7 +21,6 @@ export const useCollaboration = defineStore({
     isConnected: false,
     isDialogOpen: false,
     collaborators: [],
-    suppressContentEvent: false,
   }) as UseCollaborationState,
   getters: {
     shareLink(state: UseCollaborationState) {
@@ -38,12 +38,7 @@ export const useCollaboration = defineStore({
     },
   },
   actions: {
-    openDialog() {
-      this.isDialogOpen = true
-    },
-
-    closeDialog() {
-      this.isDialogOpen = false
-    },
+    openDialog() { this.isDialogOpen = true },
+    closeDialog() { this.isDialogOpen = false },
   },
 })

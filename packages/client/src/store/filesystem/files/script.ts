@@ -19,11 +19,15 @@ export class ScriptFile extends BaseFile {
     })
   }
 
-  public exportDocuments() {
+  public override get documents() {
+    return [this.script]
+  }
+
+  public override exportDocuments() {
     return { script: this.script.export() }
   }
 
-  public importDocuments(imports: any) {
+  public override importDocuments(imports: any) {
     this.script.import(imports.script)
   }
 

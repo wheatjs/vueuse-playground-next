@@ -13,7 +13,7 @@ export class Document {
   public model: monaco.editor.ITextModel
   public doc: any
   private onUpdate: any
-  private onDocumentChangeHook = createEventHook<{ name: string; changes: automerge.BinaryChange[]}>()
+  private onDocumentChangeHook = createEventHook<{ name: string; changes: Blob}>()
   private shouldIgnoreModelUpdate = false
   private language: string | undefined
 

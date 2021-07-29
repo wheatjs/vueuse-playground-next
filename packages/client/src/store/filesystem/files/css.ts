@@ -19,6 +19,10 @@ export class CssFile extends BaseFile {
     })
   }
 
+  public override get documents() {
+    return [this.css]
+  }
+
   public override exportDocuments() {
     return { css: this.css.export() }
   }
