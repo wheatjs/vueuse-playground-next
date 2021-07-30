@@ -11,6 +11,5 @@
   </main>
   <Share />
   <Download />
-  <!-- <Packages /> -->
   <Collaboration />
 </template>

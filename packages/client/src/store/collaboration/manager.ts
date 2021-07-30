@@ -24,10 +24,15 @@ import {
   DocumentChangeEvent,
 } from '@playground/shared'
 import type { editor as Editor } from 'monaco-editor'
+import { createSingletonPromise } from '@vueuse/core'
 import { useEditors } from './editors'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, onFileDeleted } from '~/store'
-import { MonacoCollaborationManager } from '~/monaco/collaboration'
+import type { MonacoCollaborationManager } from '~/monaco/collaboration'
 import { JsonFile, ScriptFile, SFCFile } from '~/store/filesystem/files'
+
+const useMonacoCollaborationManager = createSingletonPromise(async() => {
+  return await import('../../monaco/collaboration')
+})
 
 const COLLABORATION_URL = (import.meta.env.VITE_COLLABORATION_SERVER as string) || 'ws://localhost:4000'
 
@@ -151,7 +156,9 @@ export class CollaborationManager {
       this.fileEditors[id].manager.disconnect()
   }
 
-  private attachEditorListeners(id: string, editor: Editor.IStandaloneCodeEditor) {
+  private async attachEditorListeners(id: string, editor: Editor.IStandaloneCodeEditor) {
+    const { MonacoCollaborationManager } = await useMonacoCollaborationManager()
+
     this.fileEditors[id] = {
       editor,
       manager: new MonacoCollaborationManager(editor, {

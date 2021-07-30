@@ -1,8 +1,9 @@
 // @ts-expect-error
 import { parse } from 'acorn-loose'
 import type { editor as Editor } from 'monaco-editor'
-import * as monaco from 'monaco-editor'
+// import * as monaco from 'monaco-editor'
 import { EditorPlugin } from '../types'
+import { useMonacoImport } from '~/monaco'
 import { usePackages } from '~/store'
 
 interface State {
@@ -17,7 +18,12 @@ const state: State = {
   possiblePackages: {},
 }
 
-function doDecorations(editor: Editor.IStandaloneCodeEditor) {
+async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
+  const monaco = useMonacoImport()
+
+  if (!monaco)
+    return
+
   let i = 0
   const packages = usePackages()
   const installed = packages.packages.map(({ name }) => name)

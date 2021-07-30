@@ -1,11 +1,6 @@
 import { createSingletonPromise } from '@antfu/utils'
-// import types from '@vue/runtime-dom'
-import { emmetHTML } from 'emmet-monaco-es'
-
 import vueTypes from 'vue/dist/vue.d.ts?raw'
 import vueSharedTypes from '@vue/shared/dist/shared.d.ts?raw'
-// import vueCompilerDomTypes from '@vue/compiler-dom/dist/compiler-dom.d.ts?raw'
-// import vueCompilerCoreTypes from '@vue/compiler-core/dist/compiler-core.d.ts?raw'
 import vueRuntimeDomTypes from '@vue/runtime-dom/dist/runtime-dom.d.ts?raw'
 import vueRuntimeCoreTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
 import vueReactivityTypes from '@vue/reactivity/dist/reactivity.d.ts?raw'
@@ -107,7 +102,7 @@ const setup = createSingletonPromise(async() => {
       .map(({ name, types }) => {
         if (globalModules.includes(name)) {
           return {
-            content: types,
+            content: types!,
           }
         }
 
@@ -172,6 +167,7 @@ const setup = createSingletonPromise(async() => {
     },
   })
 
+  const { emmetHTML } = await import('emmet-monaco-es')
   emmetHTML(monaco)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

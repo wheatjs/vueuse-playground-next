@@ -1,6 +1,5 @@
 import automerge from 'automerge'
-// import * as monaco from 'monaco-editor'
-import { createEventHook } from '@vueuse/core'
+import { createEventHook, until } from '@vueuse/core'
 import { loadWorkers, useMonacoImport } from '~/monaco'
 
 interface DocumentOptions {
@@ -17,6 +16,7 @@ export class Document {
   private onDocumentChangeHook = createEventHook<{ name: string; changes: Blob}>()
   private shouldIgnoreModelUpdate = false
   private language: string | undefined
+  private hasModelLoaded = ref(false)
 
   public onDocumentChange = this.onDocumentChangeHook.on
 
@@ -40,6 +40,7 @@ export class Document {
         loadWorkers()
           .then(() => {
             this.model = monaco.editor.createModel(options.initialContent || '', options.language, monaco.Uri.parse(`file://${this.name}`))
+            this.hasModelLoaded.value = true
             this.bindModel()
           })
       })
@@ -177,6 +178,8 @@ export class Document {
     const doc = automerge.init()
     const x = automerge.applyChanges(doc, [data])
     this.doc = x[0]
+
+    await until(this.hasModelLoaded).toBeTruthy()
     this.shouldIgnoreModelUpdate = true
     this.model.setValue(this.text)
     this.shouldIgnoreModelUpdate = false
