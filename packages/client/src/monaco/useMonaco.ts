@@ -4,7 +4,7 @@ import darkTheme from 'theme-vitesse/themes/vitesse-dark.json'
 import lightTheme from 'theme-vitesse/themes/vitesse-light.json'
 import type { editor as Editor, IDisposable } from 'monaco-editor'
 import { isDark } from '~/hooks'
-import { editorPlugins } from '~/monaco/plugins/editor'
+// import { editorPlugins } from '~/monaco/plugins/editor'
 import { useEditors } from '~/store/collaboration/editors'
 import setupMonaco from '~/monaco'
 
@@ -62,7 +62,7 @@ export function useMonaco(target: Ref, options: UseMonacoOptions) {
 
       let modelDisposables: IDisposable[] = []
 
-      editor.onDidChangeModel(() => {
+      editor.onDidChangeModel(async() => {
         modelDisposables.forEach(x => x.dispose())
         modelDisposables = []
 
@@ -71,6 +71,7 @@ export function useMonaco(target: Ref, options: UseMonacoOptions) {
         if (!model)
           return
 
+        const { editorPlugins } = await import('~/monaco/plugins/editor')
         const plugins = editorPlugins.filter(({ language }) => language === model.getModeId() || language === '*')
 
         plugins.forEach((p) => {
@@ -97,7 +98,6 @@ export function useMonaco(target: Ref, options: UseMonacoOptions) {
   init()
 
   tryOnScopeDispose(() => {
-    console.log('Destroying')
     stop()
     if (disposeEditor)
       disposeEditor()

@@ -9,7 +9,9 @@ import { Splitpanes, Pane } from 'splitpanes'
         <template #title>
           <ContainerTitle type="preview" />
         </template>
-        <Preview />
+        <Suspense>
+          <Preview />
+        </Suspense>
       </Container>
     </Pane>
     <Pane size="25">

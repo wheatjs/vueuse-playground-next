@@ -2,7 +2,7 @@ import { createEventHook } from '@vueuse/core'
 import mainJsTemplate from './templates/main?raw'
 import settingsTemplate from './templates/settings?raw'
 import { BaseFile, JsonFile, SFCFile, CssFile, ScriptFile } from '~/store/filesystem/files'
-import { compileFile } from '~/preview/compiler'
+// import { compileFile } from '~/preview/compiler'
 
 export interface ExportedFile {
   filename: string
@@ -89,7 +89,9 @@ class Filesystem {
     this.onUpdate('App.vue')
   }
 
-  private onUpdate(filename?: string) {
+  private async onUpdate(filename?: string) {
+    const { compileFile } = await import('~/preview/compiler')
+
     fs.compilerErrors = []
 
     try {

@@ -1,7 +1,7 @@
 import { Processor } from 'windicss/lib'
 import { ClassParser } from 'windicss/utils/parser'
 import type { editor as Editor } from 'monaco-editor'
-// import * as monaco from 'monaco-editor'
+import * as monaco from 'monaco-editor'
 import { hex2RGB } from 'windicss/utils'
 import { isString } from '@antfu/utils'
 import { flatColors, isAttrUtility, isAttrVariant, isValidColor, isDarkColor, rgb2Hex } from './utils'
@@ -9,7 +9,6 @@ import { generateCompletions } from './utils/completions'
 import { HTMLParser } from './utils/parser'
 import { EditorPlugin } from '~/monaco/plugins/types'
 import { useStyleSheet } from '~/hooks/useStylesheet'
-import { useMonacoImport } from '~/monaco'
 
 const processor = new Processor()
 const windi = {
@@ -32,9 +31,7 @@ const state: State = {
   decorations: [],
 }
 
-async function createColorCube(document: Editor.ITextModel, start: number, offset: number, raw: string, color: string | number[]): Editor.IModelDecoration {
-  const monaco = await useMonacoImport()
-
+function createColorCube(document: Editor.ITextModel, start: number, offset: number, raw: string, color: string | number[]): Editor.IModelDecoration {
   color = isString(color) ? color : rgb2Hex(color[0], color[1], color[2])
 
   const { lineNumber: startLine, column: startColumn } = document.getPositionAt(start + offset)

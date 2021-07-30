@@ -2,9 +2,11 @@
 import type { WatchStopHandle } from 'vue'
 import srcdoc from '~/preview/template.html?raw'
 import { PreviewProxy } from '~/preview/PreviewProxy'
-import { MAIN_FILE, vueRuntimeUrl, compileModulesForPreview, compileFile } from '~/preview/compiler'
+// import { MAIN_FILE, vueRuntimeUrl, compileModulesForPreview, compileFile } from '~/preview/compiler'
 import { usePackages, fs as store, shouldUpdatePreview } from '~/store'
 import { isDark } from '~/hooks'
+
+const { MAIN_FILE, vueRuntimeUrl, compileModulesForPreview, compileFile } = await import('~/preview/compiler')
 
 const container = ref()
 const runtimeError = ref()
