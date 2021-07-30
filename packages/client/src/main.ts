@@ -13,7 +13,7 @@ import './styles/main.css'
 import './styles/tooltip.css'
 import './styles/splitpanes.css'
 
-// import { loadWorkers } from '~/monaco'
+import { loadWorkers } from '~/monaco'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,7 +26,7 @@ const router = createRouter({
 // })
 
 async function main() {
-  // await loadWorkers()
+  loadWorkers()
   createApp(App)
     .use(router)
     .use(createPinia())

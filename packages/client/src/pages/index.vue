@@ -7,7 +7,9 @@ import { Splitpanes, Pane } from 'splitpanes'
     <div overflow="hidden" h="full">
       <Splitpanes class="default-theme">
         <Pane>
-          <EditorGroup />
+          <Suspense>
+            <EditorGroup />
+          </Suspense>
         </Pane>
         <Pane>
           <PreviewGroup />

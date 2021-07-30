@@ -4,6 +4,9 @@ import { useElementBounding } from '@vueuse/core'
 import * as monaco from 'monaco-editor'
 import { fs, filesystem, usePackages } from '~/store'
 import { CssFile, JsonFile, SFCFile, ScriptFile } from '~/store/filesystem/files'
+import { loadWorkers } from '~/monaco'
+
+await loadWorkers()
 
 // To ensure that monaco loads all the wokers we need to define each langage
 // in a model

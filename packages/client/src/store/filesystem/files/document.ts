@@ -1,6 +1,7 @@
 import automerge from 'automerge'
 import * as monaco from 'monaco-editor'
 import { createEventHook } from '@vueuse/core'
+import { loadWorkers } from '~/monaco'
 
 interface DocumentOptions {
   onUpdate?: () => void
@@ -22,7 +23,6 @@ export class Document {
   constructor(name: string, options: DocumentOptions) {
     this.name = name
     this.language = options.language
-    this.model = monaco.editor.createModel(options.initialContent || '', options.language, monaco.Uri.parse(`file://${this.name}`))
     this.doc = automerge.from({ text: new automerge.Text(options.initialContent) })
     this.onUpdate = options.onUpdate
 
@@ -31,7 +31,12 @@ export class Document {
     this.updateModelFromPatch = this.updateModelFromPatch.bind(this)
     this.import = this.import.bind(this)
     this.export = this.export.bind(this)
-    this.bindModel()
+
+    loadWorkers()
+      .then(() => {
+        this.model = monaco.editor.createModel(options.initialContent || '', options.language, monaco.Uri.parse(`file://${this.name}`))
+        this.bindModel()
+      })
   }
 
   public bindModel() {

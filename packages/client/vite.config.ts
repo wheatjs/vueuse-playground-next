@@ -6,13 +6,16 @@ import Pages from 'vite-plugin-pages'
 import Icons, { ViteIconsResolver } from 'vite-plugin-icons'
 import Components, { VueUseComponentsResolver } from 'vite-plugin-components'
 import Windicss from 'vite-plugin-windicss'
-import { VitePWA } from 'vite-plugin-pwa'
+import OptimizationPersist from 'vite-plugin-optimize-persist'
+import PkgConfig from 'vite-plugin-package-config'
+// import { VitePWA } from 'vite-plugin-pwa'
 import CopyVue from './plugins/copy-vue'
 
 export default defineConfig({
   resolve: {
     alias: {
       '~/': `${path.resolve(__dirname, 'src')}/`,
+      '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js': '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js',
       '@vue/compiler-sfc': '@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js',
     },
   },
@@ -22,6 +25,8 @@ export default defineConfig({
     Pages(),
     Icons(),
     Windicss(),
+    PkgConfig(),
+    OptimizationPersist(),
     // VitePWA(),
     Components({
       globalComponentsDeclaration: true,
