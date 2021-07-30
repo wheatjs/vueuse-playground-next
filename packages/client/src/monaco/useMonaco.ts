@@ -1,22 +1,24 @@
 import type { Ref } from 'vue'
-import { until, createEventHook, tryOnUnmounted, MaybeRef } from '@vueuse/core'
+import { until, createEventHook, tryOnScopeDispose, MaybeRef } from '@vueuse/core'
 import darkTheme from 'theme-vitesse/themes/vitesse-dark.json'
 import lightTheme from 'theme-vitesse/themes/vitesse-light.json'
-import { SFCType } from '@playground/shared'
 import type { editor as Editor, IDisposable } from 'monaco-editor'
 import { isDark } from '~/hooks'
 import { editorPlugins } from '~/monaco/plugins/editor'
-import { editors } from '~/store/editors'
+import { useEditors } from '~/store/collaboration/editors'
 import setupMonaco from '~/monaco'
 
 export interface UseMonacoOptions {
   model: MaybeRef<Editor.ITextModel>
 }
 
-export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType) {
+const { addEditor } = useEditors()
+
+export function useMonaco(target: Ref, options: UseMonacoOptions) {
   const changeEventHook = createEventHook<string>()
   const isSetup = ref(false)
   let editor: Editor.IStandaloneCodeEditor
+  let disposeEditor: () => void
 
   watch(() => unref(options.model), async() => {
     await until(isSetup).toBeTruthy()
@@ -49,14 +51,14 @@ export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType)
         },
       })
 
+      disposeEditor = addEditor(editor)
+
       isSetup.value = true
 
-      watch(isDark, () => {
-        if (isDark.value)
-          monaco.editor.setTheme('vitesse-dark')
-        else
-          monaco.editor.setTheme('vitesse-light')
-      }, { immediate: true })
+      watch(isDark, () => isDark.value
+        ? monaco.editor.setTheme('vitesse-dark')
+        : monaco.editor.setTheme('vitesse-light')
+      , { immediate: true })
 
       let modelDisposables: IDisposable[] = []
 
@@ -66,27 +68,26 @@ export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType)
 
         const model = editor.getModel()
 
-        if (model) {
-          const plugins = editorPlugins.filter(({ language }) => language === model.getModeId() || language === '*')
+        if (!model)
+          return
 
-          plugins.forEach((p) => {
-            if (p.init)
-              p.init(editor)
+        const plugins = editorPlugins.filter(({ language }) => language === model.getModeId() || language === '*')
 
-            if (p.action && !editor.getAction(p.action.id))
-              editor.addAction(p.action)
+        plugins.forEach((p) => {
+          if (p.init)
+            p.init(editor)
+
+          if (p.action && !editor.getAction(p.action.id))
+            editor.addAction(p.action)
+        })
+        modelDisposables.push(model.onDidChangeContent(() => {
+          changeEventHook.trigger(editor.getValue())
+          plugins.forEach((plugin) => {
+            if (plugin.onContentChanged)
+              plugin.onContentChanged(editor)
           })
-          modelDisposables.push(model.onDidChangeContent(() => {
-            changeEventHook.trigger(editor.getValue())
-            plugins.forEach((plugin) => {
-              if (plugin.onContentChanged)
-                plugin.onContentChanged(editor)
-            })
-          }))
-        }
+        }))
       })
-
-      editors.push({ type, editor })
     }, {
       flush: 'post',
       immediate: true,
@@ -95,7 +96,12 @@ export function useMonaco(target: Ref, options: UseMonacoOptions, type: SFCType)
 
   init()
 
-  tryOnUnmounted(() => stop())
+  tryOnScopeDispose(() => {
+    console.log('Destroying')
+    stop()
+    if (disposeEditor)
+      disposeEditor()
+  })
 
   return {
     onChange: changeEventHook.on,

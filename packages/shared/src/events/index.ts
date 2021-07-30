@@ -53,8 +53,7 @@ export interface CollaboratorDisconnetEvent extends BaseEvent {
 }
 
 export interface FileOperationEvent extends BaseEvent {
-  filename: string
-  sfcType: SFCType
+  uri: string
 }
 
 export interface PackageAddEvent extends BaseEvent {

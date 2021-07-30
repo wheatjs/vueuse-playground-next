@@ -1,37 +1,30 @@
-import { EditorContentManager, RemoteCursorManager, RemoteSelectionManager } from '@convergencelabs/monaco-collab-ext'
+import { RemoteCursorManager, RemoteSelectionManager } from '@convergencelabs/monaco-collab-ext'
 import { RemoteCursor } from '@convergencelabs/monaco-collab-ext/typings/RemoteCursor'
 import { RemoteSelection } from '@convergencelabs/monaco-collab-ext/typings/RemoteSelection'
-import { SFCType } from '@playground/shared'
 import { editor as Editor, IDisposable } from 'monaco-editor'
 
 export interface MonacoCollaborationManagerEvents {
-  onReplace: (index: number, length: number, text: string) => void
-  onInsert: (index: number, text: string) => void
-  onDelete: (index: number, length: number) => void
-  onSelect: (startOffset: number, endOffset: number) => void
-  onCursor: (offset: number) => void
+  onSelect: (uri: string, startOffset: number, endOffset: number) => void
+  onCursor: (uri: string, offset: number) => void
 }
 
 export class MonacoCollaborationManager {
   private editor: Editor.ICodeEditor
-  private contentManager: EditorContentManager
   private cursorManager: RemoteCursorManager
   private selectionManager: RemoteSelectionManager
   private cursors: Record<string, RemoteCursor> = {}
   private selections: Record<string, RemoteSelection> = {}
   private disposables: IDisposable[] = []
-  private type: SFCType
 
-  constructor(editor: Editor.ICodeEditor, type: SFCType, events: MonacoCollaborationManagerEvents) {
+  constructor(editor: Editor.ICodeEditor, events: MonacoCollaborationManagerEvents) {
     this.editor = editor
-    this.type = type
 
     this.disposables.push(this.editor.onDidChangeCursorPosition((e) => {
       const model = this.editor.getModel()
 
       if (model) {
         const offset = model.getOffsetAt(e.position)
-        events.onCursor(offset)
+        events.onCursor(model.uri.toString(), offset)
       }
     }))
 
@@ -41,15 +34,8 @@ export class MonacoCollaborationManager {
       if (model) {
         const startOffset = model.getOffsetAt(e.selection.getStartPosition())
         const endOffset = model.getOffsetAt(e.selection.getEndPosition())
-        events.onSelect(startOffset, endOffset)
+        events.onSelect(model.uri.toString(), startOffset, endOffset)
       }
-    }))
-
-    this.disposables.push(this.contentManager = new EditorContentManager({
-      editor,
-      onDelete: events.onDelete,
-      onInsert: events.onInsert,
-      onReplace: events.onReplace,
     }))
 
     this.cursorManager = new RemoteCursorManager({ editor, tooltipDuration: 2, tooltips: true })
@@ -87,20 +73,7 @@ export class MonacoCollaborationManager {
     this.cursors = {}
   }
 
-  public insertContent(index: number, text: string) {
-    this.contentManager.insert(index, text)
-  }
-
-  public deleteContent(index: number, length: number) {
-    this.contentManager.delete(index, length)
-  }
-
-  public replaceContent(index: number, length: number, text: string) {
-    this.contentManager.replace(index, length, text)
-  }
-
   public disconnect() {
-    this.contentManager.dispose()
     this.disposables.forEach(x => x.dispose())
   }
 
@@ -123,5 +96,9 @@ export class MonacoCollaborationManager {
   public removeAllSelections() {
     Object.values(this.selections).forEach(selection => selection.dispose())
     this.selections = {}
+  }
+
+  public get uri() {
+    return this.editor.getModel()?.uri.toString()
   }
 }

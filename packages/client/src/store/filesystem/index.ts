@@ -109,7 +109,9 @@ class Filesystem {
       setTimeout(() => shouldUpdatePreviewHook.trigger(), 0)
     }
     else {
-      Object.values(this.files).forEach(f => compileFile(f))
+      Object.values(this.files)
+        .filter((f): f is SFCFile => f instanceof SFCFile)
+        .forEach(f => compileFile(f))
     }
 
     fs.currentFilename = this.currentFilename

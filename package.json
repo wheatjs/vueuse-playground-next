@@ -34,6 +34,7 @@
     "tsup": "^4.12.5"
   },
   "dependencies": {
+    "@vueuse/core": "^5.0.0",
     "automerge": "^1.0.1-preview.3",
     "dotenv": "^10.0.0",
     "vue-global-api": "^0.1.3"

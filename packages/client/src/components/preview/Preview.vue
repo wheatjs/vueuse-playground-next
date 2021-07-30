@@ -117,13 +117,13 @@ function createSandbox() {
     },
     on_console: (log: any) => {
       if (log.level === 'error') {
-        if (log.args[0] instanceof Error)
+        if (log.args && log.args[0] instanceof Error)
           runtimeError.value = log.args[0].message
         else
           runtimeError.value = log.args[0]
       }
       else if (log.level === 'warn') {
-        if (log.args[0].toString().includes('[Vue warn]')) {
+        if (log.args && log.args[0].toString().includes('[Vue warn]')) {
           runtimeWarning.value = log.args
             .join('')
             .replace(/\[Vue warn\]:/, '')

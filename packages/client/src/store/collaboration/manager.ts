@@ -22,11 +22,10 @@ import {
   FileDeleteEvent,
 
   DocumentChangeEvent,
-  SFCType,
 } from '@playground/shared'
 import { editor as Editor } from 'monaco-editor'
+import { useEditors } from './editors'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, onFileDeleted } from '~/store'
-// import { editors } from '~/store/editors'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'
 import { JsonFile, ScriptFile, SFCFile } from '~/store/filesystem/files'
 
@@ -36,15 +35,15 @@ type EmitParameter<T> = Omit<T, 'sender' | 'timestamp'>
 
 export interface FileEditor {
   editor: Editor.IStandaloneCodeEditor
-  type: SFCType
   manager: MonacoCollaborationManager
 }
 
 export class CollaborationManager {
   private client: Socket
   private collaboration = useCollaboration()
+  private editors = useEditors()
   private packages = usePackages()
-  private fileEditors: FileEditor[] = []
+  private fileEditors: Record<string, FileEditor> = {}
   private hasSynced = false
   private hasAttached = false
   private documentListeners: Array<{ off: () => void }> = []
@@ -74,12 +73,12 @@ export class CollaborationManager {
   public disconnect() {
     this.client.disconnect()
     this.collaboration.collaborators = []
-    this.fileEditors.forEach(({ manager }) => {
-      manager.disconnect()
-      manager.removeAllCursors()
-      manager.removeAllSelections()
-    })
-    this.fileEditors = []
+    // this.fileEditors.forEach(({ manager }) => {
+    //   manager.disconnect()
+    //   manager.removeAllCursors()
+    //   manager.removeAllSelections()
+    // })
+    // this.fileEditors = []
     this.hasSynced = false
   }
 
@@ -98,8 +97,8 @@ export class CollaborationManager {
     this.client.on(SocketEvent.PackageAdd, (data: PackageAddEvent) => this.onPackageAdd(data))
     this.client.on(SocketEvent.PackageRemove, (data: PackageRemoveEvent) => this.onPackageRemove(data))
 
-    // this.client.on(SocketEvent.EditorCursor, (data: EditorCursorEvent) => this.onEditorCursor(data))
-    // this.client.on(SocketEvent.EditorSelection, (data: EditorSelectionEvent) => this.onEditorSelection(data))
+    this.client.on(SocketEvent.EditorCursor, (data: EditorCursorEvent) => this.onEditorCursor(data))
+    this.client.on(SocketEvent.EditorSelection, (data: EditorSelectionEvent) => this.onEditorSelection(data))
 
     this.client.on(SocketEvent.FileAdd, (data: FileAddEvent) => this.onFileAdd(data))
     this.client.on(SocketEvent.FileDelete, (data: FileDeleteEvent) => this.onFileDelete(data))
@@ -122,6 +121,18 @@ export class CollaborationManager {
       this.emitFileDeleteEvent({ name })
       this.attachDocumentListeners()
     })
+
+    Object.entries(this.editors.editors).forEach(([id, editor]) => {
+      this.attachEditorListeners(id, editor)
+    })
+
+    this.editors.onEditorCreated(({ id, editor }) => {
+      this.attachEditorListeners(id, editor)
+    })
+
+    this.editors.onEditorDestroyed(({ id }) => {
+      this.removeEditorListeners(id)
+    })
   }
 
   private attachDocumentListeners() {
@@ -133,6 +144,21 @@ export class CollaborationManager {
           this.emitDocumentChangeEvent({ filename: name, changes })
         })
       })
+  }
+
+  private removeEditorListeners(id: string) {
+    if (this.fileEditors[id])
+      this.fileEditors[id].manager.disconnect()
+  }
+
+  private attachEditorListeners(id: string, editor: Editor.IStandaloneCodeEditor) {
+    this.fileEditors[id] = {
+      editor,
+      manager: new MonacoCollaborationManager(editor, {
+        onCursor: (uri, offset) => { this.emitCursorEvent({ uri, offset }) },
+        onSelect: (uri, offsetStart, offsetEnd) => { this.emitSelectionEvent({ uri, offsetStart, offsetEnd }) },
+      }),
+    }
   }
 
   private emit<T>(name: SocketEvent, payload?: Omit<T, 'sender' | 'timestamp'>) {
@@ -147,7 +173,7 @@ export class CollaborationManager {
   private onDisconnect() { this.collaboration.isConnected = false }
 
   private onCollaboratorDisconnect({ sender }: CollaboratorDisconnetEvent) {
-    this.fileEditors.forEach(({ manager }) => {
+    Object.values(this.fileEditors).forEach(({ manager }) => {
       manager.removeCursor(sender)
       manager.removeSelection(sender)
     })
@@ -203,7 +229,6 @@ export class CollaborationManager {
   }
 
   private onFileDelete({ name }: FileDeleteEvent) {
-    // console.log('Deleted file', name)
     filesystem.deleteFile(name, true)
   }
 
@@ -213,6 +238,38 @@ export class CollaborationManager {
 
   private onPackageRemove({ name }: PackageRemoveEvent) {
     this.packages.removePackage(name)
+  }
+
+  private onEditorCursor(data: EditorCursorEvent) {
+    // Find the editor manager with the same uri
+
+    Object.values(this.fileEditors).forEach(({ manager }) => {
+      if (manager.uri === data.uri) {
+        manager.setCursorPosition(data.sender, this.getUsernameById(data.sender), '#16a34a', data.offset)
+        manager.showCursor(data.sender)
+      }
+      else {
+        manager.hideCursor(data.sender)
+      }
+    })
+  }
+
+  private onEditorSelection(data: EditorSelectionEvent) {
+    Object.values(this.fileEditors).forEach(({ manager }) => {
+      if (manager.uri === data.uri)
+        manager.setSelection(data.sender, '#16a34a', data.offsetStart, data.offsetEnd)
+
+      // else
+      //   manager.removeSelection(data.sender)
+    })
+  }
+
+  public emitCursorEvent(data: EmitParameter<EditorCursorEvent>) {
+    this.emit(SocketEvent.EditorCursor, data)
+  }
+
+  public emitSelectionEvent(data: EmitParameter<EditorSelectionEvent>) {
+    this.emit(SocketEvent.EditorSelection, data)
   }
 
   public emitDocumentChangeEvent(data: EmitParameter<DocumentChangeEvent>) {
@@ -258,5 +315,9 @@ export class CollaborationManager {
     //   return
 
     this.emit(SocketEvent.FileDelete, data)
+  }
+
+  private getUsernameById(id: string) {
+    return this.collaboration.collaborators.find(user => user.id === id)?.username || id
   }
 }
