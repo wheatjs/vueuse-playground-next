@@ -5,15 +5,13 @@ import { createPinia } from 'pinia'
 import { MotionPlugin } from '@vueuse/motion'
 
 import routes from 'virtual:generated-pages'
-import VTooltip from 'v-tooltip'
+// import VTooltip from 'v-tooltip'
 import App from './App.vue'
 
 import 'virtual:windi.css'
 import './styles/main.css'
 import './styles/tooltip.css'
 import './styles/splitpanes.css'
-
-import { loadWorkers } from '~/monaco'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,11 +24,10 @@ const router = createRouter({
 // })
 
 async function main() {
-  loadWorkers()
   createApp(App)
     .use(router)
     .use(createPinia())
-    .use(VTooltip)
+    // .use(VTooltip)
     .use(MotionPlugin)
     .mount('#app')
 }

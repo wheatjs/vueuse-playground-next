@@ -18,7 +18,21 @@
           document.documentElement.classList.toggle('dark', true)
       })()
     </script>
-    <div id="app"></div>
+    <div id="app">
+      <div grid="~ gap-3 cols-2" h="screen" p="4" m="l-14"> 
+        <div grid="~ gap-3">
+          <div flex="~ col" h="full">
+            <div bg="dark:dark-500 light-400" border="1 light-900 dark:dark-400 rounded-t" h="8"></div>
+            <div bg="dark:dark-500 light-400" border="1 light-900 dark:dark-400 rounded-b" flex="1"></div>
+          </div>
+          <div bg="dark:dark-500 light-400" border="1 light-900 dark:dark-400 rounded"></div>
+        </div>
+        <div grid="~ gap-3" class="grid-rows-[75%,auto]">
+          <div bg="dark:dark-500 light-400" border="1 light-900 dark:dark-400 rounded"></div>
+          <div bg="dark:dark-500 light-400" border="1 light-900 dark:dark-400 rounded"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

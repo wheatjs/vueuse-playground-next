@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { Splitpanes, Pane } from 'splitpanes'
-import { useElementBounding } from '@vueuse/core'
-import * as monaco from 'monaco-editor'
 import { fs, filesystem, usePackages } from '~/store'
 import { CssFile, JsonFile, SFCFile, ScriptFile } from '~/store/filesystem/files'
 import { loadWorkers } from '~/monaco'
@@ -70,7 +68,7 @@ const type = computed(() => {
             <Editor :model="scriptModel" />
           </Container>
         </Pane>
-        <Pane v-if="templateModel">
+        <Pane v-if="templateModel || !scriptModel">
           <Container>
             <template #title>
               <ContainerTitle v-if="fs.currentFilename !== 'main.js'" type="sfc:template" />
@@ -83,7 +81,3 @@ const type = computed(() => {
     </div>
   </div>
 </template>
-
-<style>
-.calc-height { height: calc(100% - 2rem); }
-</style>

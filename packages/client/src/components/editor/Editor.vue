@@ -6,7 +6,7 @@ const props = defineProps<{ model: Editor.ITextModel }>()
 const { model } = toRefs(props)
 
 const target = ref()
-useMonaco(target, { model }, 'script')
+useMonaco(target, { model })
 </script>
 
 <template>

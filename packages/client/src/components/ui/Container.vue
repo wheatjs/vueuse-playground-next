@@ -48,9 +48,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style>
-  .calc-height {
-    height: calc(100% - 2rem);
-  }
-</style>

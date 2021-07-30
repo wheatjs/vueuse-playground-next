@@ -17,17 +17,16 @@ const collaboration = useCollaboration()
     p="y-4"
   >
     <Logo w="12" m="b-2" />
-    <IconButton v-tooltip.right="'VueUse Docs'" class="transform hover:rotate-8" href="https://vueuse.org/" target="_blank">
+    <IconButton class="transform hover:rotate-8" href="https://vueuse.org/" target="_blank">
       <carbon-notebook />
     </IconButton>
-    <IconButton v-tooltip.right="'Share'" class="transform hover:rotate-10" @click="share.openDialog()">
+    <IconButton class="transform hover:rotate-10" @click="share.openDialog()">
       <carbon-share />
     </IconButton>
-    <IconButton v-tooltip.right="'Download'" class="transform hover:-rotate-8" @click="download.openDialog()">
+    <IconButton class="transform hover:-rotate-8" @click="download.openDialog()">
       <carbon-download />
     </IconButton>
     <IconButton
-      v-tooltip.right="'Collaborate'"
       class="transform hover:-rotate-8"
       :class="{ '!text-green-500 !text-opacity-20': collaboration.isConnected }"
       @click="collaboration.openDialog()"
@@ -52,14 +51,14 @@ const collaboration = useCollaboration()
       </div>
     </IconButton>
     <span flex="1" />
-    <IconButton v-tooltip.right="'Toggle Theme'" class="transform hover:rotate-12" @click="toggleDark()">
+    <IconButton class="transform hover:rotate-12" @click="toggleDark()">
       <carbon-sun v-if="isDark" />
       <carbon-moon v-else />
     </IconButton>
-    <IconButton v-tooltip.right="'Sign In'" class="transform hover:-rotate-10">
+    <IconButton class="transform hover:-rotate-10">
       <carbon-login />
     </IconButton>
-    <IconButton v-tooltip.right="'Settings'" class="transform hover:-rotate-10">
+    <IconButton class="transform hover:-rotate-10">
       <carbon-settings />
     </IconButton>
   </nav>

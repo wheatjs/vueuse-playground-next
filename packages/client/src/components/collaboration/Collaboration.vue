@@ -50,7 +50,7 @@ const disconnect = () => {
         <template #icon>
           <carbon-link />
         </template>
-        <Button v-tooltip="'Copy to Clipboard'">
+        <Button>
           <carbon-copy />
         </Button>
       </Textfield>

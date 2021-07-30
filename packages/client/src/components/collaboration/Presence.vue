@@ -9,7 +9,6 @@ const collaboration = useCollaboration()
     v-for="collaborator in collaboration.otherCollaborators"
     :key="collaborator.id"
     v-motion
-    v-tooltip.right="collaborator.username"
     :delay="0"
     :initial="{
       y: 100
