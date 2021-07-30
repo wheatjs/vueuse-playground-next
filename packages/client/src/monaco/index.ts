@@ -1,11 +1,4 @@
 import { createSingletonPromise } from '@antfu/utils'
-import vueTypes from 'vue/dist/vue.d.ts?raw'
-import vueSharedTypes from '@vue/shared/dist/shared.d.ts?raw'
-import vueRuntimeDomTypes from '@vue/runtime-dom/dist/runtime-dom.d.ts?raw'
-import vueRuntimeCoreTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
-import vueReactivityTypes from '@vue/reactivity/dist/reactivity.d.ts?raw'
-import localShims from '../shims-vue.d.ts?raw'
-import playgroundSettingsTypes from '~/settings.d.ts?raw'
 import { usePackages, fs } from '~/store'
 
 /* __imports__ */
@@ -78,11 +71,24 @@ const setup = createSingletonPromise(async() => {
     diagnosticCodesToIgnore: [6133, 6198],
   })
 
+  const [
+    { default: vueTypes },
+    { default: vueSharedTypes },
+    { default: vueRuntimeDomTypes },
+    { default: vueRuntimeCoreTypes },
+    { default: vueReactivityTypes },
+    { default: localShims },
+  ] = await Promise.all([
+    import('vue/dist/vue.d.ts?raw'),
+    import('@vue/shared/dist/shared.d.ts?raw'),
+    import('@vue/runtime-dom/dist/runtime-dom.d.ts?raw'),
+    import('@vue/runtime-core/dist/runtime-core.d.ts?raw'),
+    import('@vue/reactivity/dist/reactivity.d.ts?raw'),
+    import('../shims-vue.d.ts?raw'),
+  ])
+
   const builtinLibs = [
-    { content: `declare module '@playground' { ${playgroundSettingsTypes} }` },
     { content: `declare module '@vue/shared' { ${vueSharedTypes} }` },
-    // { content: `declare module '@vue/compiler-core' { ${vueCompilerCoreTypes} }` },
-    // { content: `declare module '@vue/compiler-dom' { ${vueCompilerDomTypes} }` },
     { content: `declare module '@vue/runtime-core' { ${vueRuntimeCoreTypes} }` },
     { content: `declare module '@vue/runtime-dom' { ${vueRuntimeDomTypes} }` },
     { content: `declare module '@vue/reactivity' { ${vueReactivityTypes} }` },

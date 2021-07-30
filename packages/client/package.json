@@ -73,6 +73,7 @@
     "optimizeDeps": {
       "include": [
         "@antfu/utils",
+        "@babel/parser",
         "@convergencelabs/monaco-collab-ext",
         "@headlessui/vue",
         "@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js",
