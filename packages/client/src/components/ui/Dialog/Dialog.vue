@@ -38,16 +38,6 @@ const open = () => isOpen.value = true
         bg="dark:(black opacity-20)"
       />
       <div
-        v-motion
-        :delay="0"
-        :initial="{
-          scale: 0.25,
-          opacity: 0.5
-        }"
-        :enter="{
-          scale: 1,
-          opacity: 1,
-        }"
         position="relative"
         border="rounded-md"
         overflow="auto"

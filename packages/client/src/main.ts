@@ -2,7 +2,6 @@ import 'vue-global-api'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
-import { MotionPlugin } from '@vueuse/motion'
 
 import routes from 'virtual:generated-pages'
 // import VTooltip from 'v-tooltip'
@@ -23,13 +22,7 @@ const router = createRouter({
 //   registerSW({ immediate: true })
 // })
 
-async function main() {
-  createApp(App)
-    .use(router)
-    .use(createPinia())
-    // .use(VTooltip)
-    .use(MotionPlugin)
-    .mount('#app')
-}
-
-main()
+createApp(App)
+  .use(router)
+  .use(createPinia())
+  .mount('#app')

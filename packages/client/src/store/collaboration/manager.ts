@@ -23,7 +23,7 @@ import {
 
   DocumentChangeEvent,
 } from '@playground/shared'
-import { editor as Editor } from 'monaco-editor'
+import type { editor as Editor } from 'monaco-editor'
 import { useEditors } from './editors'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, onFileDeleted } from '~/store'
 import { MonacoCollaborationManager } from '~/monaco/collaboration'

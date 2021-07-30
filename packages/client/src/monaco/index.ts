@@ -9,7 +9,6 @@ import vueSharedTypes from '@vue/shared/dist/shared.d.ts?raw'
 import vueRuntimeDomTypes from '@vue/runtime-dom/dist/runtime-dom.d.ts?raw'
 import vueRuntimeCoreTypes from '@vue/runtime-core/dist/runtime-core.d.ts?raw'
 import vueReactivityTypes from '@vue/reactivity/dist/reactivity.d.ts?raw'
-import * as monaco from 'monaco-editor'
 import localShims from '../shims-vue.d.ts?raw'
 import playgroundSettingsTypes from '~/settings.d.ts?raw'
 import { usePackages, fs } from '~/store'
@@ -53,7 +52,19 @@ export const loadWorkers = createSingletonPromise(async() => {
   ])
 })
 
+export const useMonacoImport = createSingletonPromise(async() => {
+  if (typeof window !== 'undefined')
+    return await import('monaco-editor')
+
+  return null
+})
+
 const setup = createSingletonPromise(async() => {
+  const monaco = await useMonacoImport()
+
+  if (!monaco)
+    return
+
   monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
     ...monaco.languages.typescript.javascriptDefaults.getCompilerOptions(),
     noUnusedLocals: false,

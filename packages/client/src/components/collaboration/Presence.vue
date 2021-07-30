@@ -8,14 +8,6 @@ const collaboration = useCollaboration()
   <div
     v-for="collaborator in collaboration.otherCollaborators"
     :key="collaborator.id"
-    v-motion
-    :delay="0"
-    :initial="{
-      y: 100
-    }"
-    :enter="{
-      y: 0
-    }"
     h="6"
     w="6"
     border="rounded-full"

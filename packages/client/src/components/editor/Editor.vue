@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { editor as Editor } from 'monaco-editor'
 import { useMonaco } from '~/monaco/useMonaco'
 
-const props = defineProps<{ model: Editor.ITextModel }>()
+const props = defineProps<{ model: any }>()
 const { model } = toRefs(props)
 
 const target = ref()

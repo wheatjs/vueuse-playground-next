@@ -2,24 +2,23 @@
 import { useRoute } from 'vue-router'
 import { useClipboard } from '@vueuse/core'
 import { useCollaboration } from '~/store'
-import { CollaborationManager } from '~/store/collaboration'
+import { CollaborationManager } from '~/store/collaboration/manager'
 
 const route = useRoute()
 const manager = new CollaborationManager()
 const collaboration = useCollaboration()
 const clipboard = useClipboard()
 
-const stop = watch(() => [route.query], () => {
+watch(() => [route.query], () => {
   if (route.query.room && !collaboration.isConnected) {
-    stop()
     // To ensure the editors have been mounted
     // probably need to come up with a better solution
     setTimeout(() => {
       if (route.query.room)
         manager.connect(route.query.room.toString())
-    }, 500)
+    }, 0)
   }
-})
+}, { immediate: true })
 
 const connect = () => {
   if (collaboration.isConnected)
@@ -37,7 +36,7 @@ const disconnect = () => {
 <template>
   <Dialog v-model="collaboration.isDialogOpen" max-w="prose">
     <DialogTitle>
-      Collaborate
+      Collaborate {{ route.query }}
       <template #icon>
         <carbon-link />
       </template>

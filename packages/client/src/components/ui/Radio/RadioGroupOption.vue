@@ -30,14 +30,6 @@ import { RadioGroupOption as HeadlessRadioGroupOption, RadioGroupLabel, RadioGro
       </div>
       <div
         v-if="checked"
-        v-motion
-        :delay="0"
-        :initial="{
-          x: 100
-        }"
-        :enter="{
-          x: 0
-        }"
         w="8"
         h="8"
         bg="green-400"

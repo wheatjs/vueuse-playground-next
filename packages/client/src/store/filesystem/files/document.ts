@@ -1,7 +1,7 @@
 import automerge from 'automerge'
-import * as monaco from 'monaco-editor'
+// import * as monaco from 'monaco-editor'
 import { createEventHook } from '@vueuse/core'
-import { loadWorkers } from '~/monaco'
+import { loadWorkers, useMonacoImport } from '~/monaco'
 
 interface DocumentOptions {
   onUpdate?: () => void
@@ -32,10 +32,16 @@ export class Document {
     this.import = this.import.bind(this)
     this.export = this.export.bind(this)
 
-    loadWorkers()
-      .then(() => {
-        this.model = monaco.editor.createModel(options.initialContent || '', options.language, monaco.Uri.parse(`file://${this.name}`))
-        this.bindModel()
+    useMonacoImport()
+      .then((monaco) => {
+        if (!monaco)
+          return
+
+        loadWorkers()
+          .then(() => {
+            this.model = monaco.editor.createModel(options.initialContent || '', options.language, monaco.Uri.parse(`file://${this.name}`))
+            this.bindModel()
+          })
       })
   }
 
@@ -99,8 +105,12 @@ export class Document {
    *
    * This should run on any patch received from a peer
    */
-  public updateModelFromPatch(patch: automerge.Patch) {
+  public async updateModelFromPatch(patch: automerge.Patch) {
     this.shouldIgnoreModelUpdate = true
+    const monaco = await useMonacoImport()
+
+    if (!monaco)
+      return
 
     if ('text' in patch.diffs.props) {
       Object.values(patch.diffs.props.text)

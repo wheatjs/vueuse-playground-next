@@ -2,8 +2,9 @@
 import { Splitpanes, Pane } from 'splitpanes'
 import { fs, filesystem, usePackages } from '~/store'
 import { CssFile, JsonFile, SFCFile, ScriptFile } from '~/store/filesystem/files'
-import { loadWorkers } from '~/monaco'
+import { loadWorkers, useMonacoImport } from '~/monaco'
 
+await useMonacoImport()
 await loadWorkers()
 
 // To ensure that monaco loads all the wokers we need to define each langage

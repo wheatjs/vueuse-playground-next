@@ -1,4 +1,4 @@
-import { editor as Editor } from 'monaco-editor'
+import type { editor as Editor } from 'monaco-editor'
 import { createEventHook } from '@vueuse/core'
 
 const onEditorCreatedHook = createEventHook<{ id: string; editor: Editor.IStandaloneCodeEditor}>()

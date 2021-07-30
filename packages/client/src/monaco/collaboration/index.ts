@@ -1,7 +1,7 @@
 import { RemoteCursorManager, RemoteSelectionManager } from '@convergencelabs/monaco-collab-ext'
 import { RemoteCursor } from '@convergencelabs/monaco-collab-ext/typings/RemoteCursor'
 import { RemoteSelection } from '@convergencelabs/monaco-collab-ext/typings/RemoteSelection'
-import { editor as Editor, IDisposable } from 'monaco-editor'
+import type { editor as Editor, IDisposable } from 'monaco-editor'
 
 export interface MonacoCollaborationManagerEvents {
   onSelect: (uri: string, startOffset: number, endOffset: number) => void
