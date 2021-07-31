@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { Collaborator, randomUsername } from '@playground/shared'
 
-// export { CollaborationManager } from './manager'
-
 export interface UseCollaborationState {
   id: string | null
   username: string

@@ -190,5 +190,3 @@ const setup = createSingletonPromise(async() => {
 export default setup
 
 loadWorkers()
-
-// setup()

@@ -11,5 +11,7 @@
   </main>
   <Share />
   <Download />
-  <Collaboration />
+  <client-only>
+    <Collaboration />
+  </client-only>
 </template>

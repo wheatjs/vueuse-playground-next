@@ -31,7 +31,10 @@ import type { MonacoCollaborationManager } from '~/monaco/collaboration'
 import { JsonFile, ScriptFile, SFCFile } from '~/store/filesystem/files'
 
 const useMonacoCollaborationManager = createSingletonPromise(async() => {
-  return await import('../../monaco/collaboration')
+  if (typeof window !== 'undefined')
+    return await import('../../monaco/collaboration')
+
+  return undefined
 })
 
 const COLLABORATION_URL = (import.meta.env.VITE_COLLABORATION_SERVER as string) || 'ws://localhost:4000'
@@ -157,7 +160,12 @@ export class CollaborationManager {
   }
 
   private async attachEditorListeners(id: string, editor: Editor.IStandaloneCodeEditor) {
-    const { MonacoCollaborationManager } = await useMonacoCollaborationManager()
+    const m = await useMonacoCollaborationManager()
+
+    if (!m)
+      return
+
+    const { MonacoCollaborationManager } = m
 
     this.fileEditors[id] = {
       editor,

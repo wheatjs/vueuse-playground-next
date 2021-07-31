@@ -9,6 +9,7 @@ import Windicss from 'vite-plugin-windicss'
 import OptimizationPersist from 'vite-plugin-optimize-persist'
 import PkgConfig from 'vite-plugin-package-config'
 // import { VitePWA } from 'vite-plugin-pwa'
+import monaco from 'rollup-plugin-monaco-editor'
 import CopyVue from './plugins/copy-vue'
 
 export default defineConfig({
@@ -37,6 +38,13 @@ export default defineConfig({
     }),
   ],
   build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          monaco: ['monaco-editor', 'emmet-monaco-es'],
+        },
+      },
+    },
     // rollupOptions: {
     //   output: {
     //     manualChunks: {
