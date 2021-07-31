@@ -17,10 +17,10 @@ const router = createRouter({
   routes,
 })
 
-// router.isReady().then(async() => {
-//   const { registerSW } = await import('virtual:pwa-register')
-//   registerSW({ immediate: true })
-// })
+router.isReady().then(async() => {
+  const { registerSW } = await import('virtual:pwa-register')
+  registerSW({ immediate: true })
+})
 
 createApp(App)
   .use(router)

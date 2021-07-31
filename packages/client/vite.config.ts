@@ -8,8 +8,7 @@ import Components, { VueUseComponentsResolver } from 'vite-plugin-components'
 import Windicss from 'vite-plugin-windicss'
 import OptimizationPersist from 'vite-plugin-optimize-persist'
 import PkgConfig from 'vite-plugin-package-config'
-// import { VitePWA } from 'vite-plugin-pwa'
-import monaco from 'rollup-plugin-monaco-editor'
+import { VitePWA } from 'vite-plugin-pwa'
 import CopyVue from './plugins/copy-vue'
 
 export default defineConfig({
@@ -28,7 +27,10 @@ export default defineConfig({
     Windicss(),
     PkgConfig(),
     OptimizationPersist(),
-    // VitePWA(),
+    VitePWA({
+      mode: 'development',
+      base: '/',
+    }),
     Components({
       globalComponentsDeclaration: true,
       customComponentResolvers: [
@@ -45,17 +47,6 @@ export default defineConfig({
         },
       },
     },
-    // rollupOptions: {
-    //   output: {
-    //     manualChunks: {
-    //       htmlWorker: ['./src/monaco/languages/html/html.worker'],
-    //       tsWorker: ['monaco-editor/esm/vs/language/typescript/ts.worker'],
-    //       cssWorker: ['monaco-editor/esm/vs/language/css/css.worker'],
-    //       jsonWorker: ['monaco-editor/esm/vs/language/json/json.worker'],
-    //       editorWorker: ['monaco-editor/esm/vs/editor/editor.worker'],
-    //     },
-    //   },
-    // },
   },
   optimizeDeps: {
     exclude: ['consolidate', 'velocityjs', 'dustjs-linkedin', 'atpl', 'liquor', 'twig', 'ejs', 'eco', 'jazz', 'hamljs', 'hamlet', 'jqtpl', 'whiskers', 'haml-coffee', 'hogan.js', 'templayed', 'handlebars', 'underscore', 'lodash', 'walrus', 'mustache', 'just', 'ect', 'mote', 'toffee', 'dot', 'bracket-template', 'ractive', 'htmling', 'babel-core', 'plates', 'react-dom/server', 'react', 'vash', 'slm', 'marko', 'teacup/lib/express', 'coffee-script', 'squirrelly', 'twing'],
