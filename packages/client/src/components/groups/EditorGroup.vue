@@ -74,6 +74,15 @@ const type = computed(() => {
             <template #title>
               <ContainerTitle v-if="fs.currentFilename !== 'main.js'" type="sfc:template" />
               <ContainerTitle v-else type="settings" />
+              <!-- <span flex="1" />
+              <div space="x-1">
+                <IconButton mini w="6">
+                  <vscode-icons-file-type-html w="4" h="4" />
+                </IconButton>
+                <IconButton mini w="6">
+                  <vscode-icons-file-type-css w="4" h="4" />
+                </IconButton>
+              </div> -->
             </template>
             <Editor :model="templateModel" />
           </Container>

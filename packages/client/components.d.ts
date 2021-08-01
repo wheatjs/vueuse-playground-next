@@ -66,6 +66,7 @@ declare module 'vue' {
     Textfield: typeof import('./src/components/ui/Textfield/Textfield.vue')['default']
     VscodeIconsDefaultFile: typeof import('virtual:vite-icons/vscode-icons/default-file')['default']
     VscodeIconsFileTypeCss: typeof import('virtual:vite-icons/vscode-icons/file-type-css')['default']
+    VscodeIconsFileTypeHtml: typeof import('virtual:vite-icons/vscode-icons/file-type-html')['default']
     VscodeIconsFileTypeJson: typeof import('virtual:vite-icons/vscode-icons/file-type-json')['default']
     VscodeIconsFileTypeVite: typeof import('virtual:vite-icons/vscode-icons/file-type-vite')['default']
     VscodeIconsFileTypeVue: typeof import('virtual:vite-icons/vscode-icons/file-type-vue')['default']

@@ -56,8 +56,8 @@ const auth = useAuth()
       <carbon-sun v-if="isDark" />
       <carbon-moon v-else />
     </IconButton>
-    <IconButton class="transform hover:-rotate-10" @click="auth.openDialog()">
-      <carbon-login />
+    <IconButton :background="auth.user?.photoURL" class="transform hover:-rotate-10" @click="auth.openDialog()">
+      <carbon-login v-if="!auth.user?.photoURL" />
     </IconButton>
     <IconButton class="transform hover:-rotate-10">
       <carbon-settings />

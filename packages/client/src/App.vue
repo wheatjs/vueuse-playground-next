@@ -3,7 +3,7 @@ import { useAuth } from '~/store'
 
 const auth = useAuth()
 auth.init()
-auth.authenticateAnonymously()
+// auth.authenticateAnonymously()
 </script>
 
 <template>

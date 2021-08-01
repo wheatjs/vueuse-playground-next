@@ -10,6 +10,7 @@ const props = defineProps<{
   mini?: boolean
   small?: boolean
   large?: boolean
+  background?: string
 }>()
 
 const is = computed(() => props.to ? 'router-link' : props.href ? 'a' : 'button')
@@ -40,6 +41,7 @@ const computedProps = reactivePick(props, 'to', 'href')
       position="absolute inset-0"
       w="full"
       h="full"
+      :image="background"
     />
     <div
       :class="{
