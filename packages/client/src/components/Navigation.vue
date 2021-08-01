@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { useShare, useDownload, useCollaboration } from '~/store'
+import { useShare, useDownload, useCollaboration, useAuth } from '~/store'
 import { toggleDark, isDark } from '~/hooks'
 
 const share = useShare()
 const download = useDownload()
 const collaboration = useCollaboration()
+const auth = useAuth()
 </script>
 
 <template>
@@ -55,7 +56,7 @@ const collaboration = useCollaboration()
       <carbon-sun v-if="isDark" />
       <carbon-moon v-else />
     </IconButton>
-    <IconButton class="transform hover:-rotate-10">
+    <IconButton class="transform hover:-rotate-10" @click="auth.openDialog()">
       <carbon-login />
     </IconButton>
     <IconButton class="transform hover:-rotate-10">

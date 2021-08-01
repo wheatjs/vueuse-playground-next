@@ -3,6 +3,7 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
+    Auth: typeof import('./src/components/auth/Auth.vue')['default']
     Button: typeof import('./src/components/ui/Button/Button.vue')['default']
     CarbonAdd: typeof import('virtual:vite-icons/carbon/add')['default']
     CarbonApplication: typeof import('virtual:vite-icons/carbon/application')['default']
@@ -12,6 +13,7 @@ declare module 'vue' {
     CarbonDownload: typeof import('virtual:vite-icons/carbon/download')['default']
     CarbonLink: typeof import('virtual:vite-icons/carbon/link')['default']
     CarbonLogin: typeof import('virtual:vite-icons/carbon/login')['default']
+    CarbonLogoGithub: typeof import('virtual:vite-icons/carbon/logo-github')['default']
     CarbonMoon: typeof import('virtual:vite-icons/carbon/moon')['default']
     CarbonNotebook: typeof import('virtual:vite-icons/carbon/notebook')['default']
     CarbonPlay: typeof import('virtual:vite-icons/carbon/play')['default']
@@ -19,6 +21,7 @@ declare module 'vue' {
     CarbonShare: typeof import('virtual:vite-icons/carbon/share')['default']
     CarbonStop: typeof import('virtual:vite-icons/carbon/stop')['default']
     CarbonSun: typeof import('virtual:vite-icons/carbon/sun')['default']
+    CarbonUser: typeof import('virtual:vite-icons/carbon/user')['default']
     Collaboration: typeof import('./src/components/collaboration/Collaboration.vue')['default']
     Container: typeof import('./src/components/ui/Container.vue')['default']
     ContainerTitle: typeof import('./src/components/ui/ContainerTitle.vue')['default']

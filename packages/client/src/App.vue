@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { useAuth } from '~/store'
 
+const auth = useAuth()
+auth.init()
+auth.authenticateAnonymously()
 </script>
 
 <template>
@@ -9,6 +13,7 @@
   <main h="full" m="l-18">
     <router-view />
   </main>
+  <Auth />
   <Share />
   <Download />
   <Collaboration />

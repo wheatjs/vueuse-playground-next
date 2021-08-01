@@ -36,7 +36,7 @@ const disconnect = () => {
 <template>
   <Dialog v-model="collaboration.isDialogOpen" max-w="prose">
     <DialogTitle>
-      Collaborate {{ route.query }}
+      Collaborate
       <template #icon>
         <carbon-link />
       </template>
