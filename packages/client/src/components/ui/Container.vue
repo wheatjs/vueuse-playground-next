@@ -17,7 +17,7 @@ export default {
   >
     <div
       v-bind="$attrs"
-      p="x-2"
+      p="l-2"
       h="8"
       bg="dark:dark-500 light-400"
       font="medium"
@@ -37,7 +37,9 @@ export default {
       >
         <slot name="title" />
       </div>
-      <slot name="overflow" />
+      <div h="full" flex="~ row">
+        <slot name="overflow" />
+      </div>
     </div>
     <div
       class="calc-height"

@@ -242,6 +242,7 @@ class Filesystem {
 
 export const filesystem = new Filesystem()
 export const shouldUpdatePreview = shouldUpdatePreviewHook.on
+export const forceUpdatePreview = shouldUpdatePreviewHook.trigger
 
 export const onFileCreated = onFileCreatedHook.on
 export const onFileDeleted = onFileDeletedHook.on

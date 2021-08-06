@@ -2,12 +2,12 @@
 import type { WatchStopHandle } from 'vue'
 import srcdoc from '~/preview/template.html?raw'
 import { PreviewProxy } from '~/preview/PreviewProxy'
-// import { MAIN_FILE, vueRuntimeUrl, compileModulesForPreview, compileFile } from '~/preview/compiler'
-import { usePackages, fs as store, shouldUpdatePreview } from '~/store'
+import { usePackages, fs as store, shouldUpdatePreview, usePreview } from '~/store'
 import { isDark } from '~/hooks'
 
 const { MAIN_FILE, vueRuntimeUrl, compileModulesForPreview, compileFile } = await import('~/preview/compiler')
 
+const preview = usePreview()
 const container = ref()
 const runtimeError = ref()
 const runtimeWarning = ref()
@@ -21,6 +21,8 @@ const packages = usePackages()
 watch([runtimeError, runtimeWarning], () => {
   store.runtimeErrors = [runtimeError.value, runtimeWarning.value].filter(x => x)
 })
+
+watch([isDark], () => updatePreview())
 
 // create sandbox on mount
 onMounted(createSandbox)
@@ -55,7 +57,7 @@ watch(() => packages.importMap, (importMap, prev) => {
   }
 }, { deep: true })
 // reset sandbox when version changes
-watch([vueRuntimeUrl, isDark], createSandbox)
+watch([vueRuntimeUrl], createSandbox)
 onUnmounted(() => {
   proxy.destroy()
   stopUpdateWatcher && stopUpdateWatcher()
@@ -145,15 +147,17 @@ function createSandbox() {
   })
   sandbox.addEventListener('load', () => {
     proxy.handle_links()
-    // stopUpdateWatcher = watchEffect(updatePreview)
-
     ;({ off: stopUpdateWatcher } = shouldUpdatePreview(() => {
       updatePreview()
     }))
     updatePreview()
   })
 }
+
 async function updatePreview() {
+  if (preview.isExecutionPaused)
+    return
+
   // console.clear()
   runtimeError.value = null
   runtimeWarning.value = null

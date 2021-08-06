@@ -85,9 +85,12 @@
         "vscode-html-languageservice",
         "vue",
         "vue-global-api",
+        "vue-hako",
         "vue-router",
         "vuedraggable",
         "windicss/lib",
+        "windicss/plugin/forms",
+        "windicss/plugin/typography",
         "windicss/utils",
         "windicss/utils/parser"
       ]
