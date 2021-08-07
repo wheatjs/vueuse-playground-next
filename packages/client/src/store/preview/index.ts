@@ -1,10 +1,18 @@
 import { defineStore } from 'pinia'
 import { forceUpdatePreview } from '../filesystem'
 
+export interface UsePreviewState {
+  landscape: boolean
+  size: string
+  sizes: Record<string, [number, number]>
+  isExecutionPaused: boolean
+}
+
 export const usePreview = defineStore({
   id: 'preview',
   state() {
     return {
+      landscape: false,
       size: 'Default',
       sizes: {
         'Default': [0, 0],
@@ -22,7 +30,17 @@ export const usePreview = defineStore({
         'Galaxy Fold': [280, 653],
       },
       isExecutionPaused: false,
-    }
+    } as UsePreviewState
+  },
+  getters: {
+    resolution: (state: UsePreviewState) => {
+      const [width, height] = state.sizes[state.size] || [0, 0]
+
+      if (state.landscape)
+        return { height: width, width: height }
+
+      return { width, height }
+    },
   },
   actions: {
     forceExecution() {

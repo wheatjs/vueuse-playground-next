@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { Splitpanes, Pane } from 'splitpanes'
-// import { Hako } from 'vue-hako'
 import { usePreview } from '~/store'
 
 const preview = usePreview()
-
 const enabled = computed(() => preview.size === 'Default')
-const width = computed(() => preview.sizes[preview.size][0])
-const height = computed(() => preview.sizes[preview.size][1])
 </script>
 
 <template>
@@ -29,6 +25,15 @@ const height = computed(() => preview.sizes[preview.size][1])
             <carbon-play v-if="preview.isExecutionPaused" text="green-500" />
             <carbon-pause v-else text="red-400" />
           </UtilityButton>
+          <UtilityButton
+            v-if="preview.size !== 'Default'"
+            small
+            border="l-1 dark:dark-300"
+            @click="() => preview.landscape = !preview.landscape"
+          >
+            <mdi-phone-rotate-landscape v-if="!preview.landscape" text="dark:(light-900 opacity-50)" />
+            <mdi-phone-rotate-portrait v-else text="dark:(light-900 opacity-50)" />
+          </UtilityButton>
           <Listbox v-model="preview.size">
             <template #default="{ value }">
               <carbon-devices />
@@ -47,8 +52,8 @@ const height = computed(() => preview.sizes[preview.size][1])
           <Hako
             h="full"
             w="full"
-            :width="width"
-            :height="height"
+            :width="preview.resolution.width"
+            :height="preview.resolution.height"
             :disable-scaling="enabled"
           >
             <Preview bg="dark:dark-700 light-100" />

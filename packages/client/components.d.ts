@@ -52,6 +52,8 @@ declare module 'vue' {
     MdiConsole: typeof import('virtual:vite-icons/mdi/console')['default']
     MdiEye: typeof import('virtual:vite-icons/mdi/eye')['default']
     MdiLanguageCss3: typeof import('virtual:vite-icons/mdi/language-css3')['default']
+    MdiPhoneRotateLandscape: typeof import('virtual:vite-icons/mdi/phone-rotate-landscape')['default']
+    MdiPhoneRotatePortrait: typeof import('virtual:vite-icons/mdi/phone-rotate-portrait')['default']
     Menu: typeof import('./src/components/ui/Menu/Menu.vue')['default']
     MenuItem: typeof import('./src/components/ui/Menu/MenuItem.vue')['default']
     Navigation: typeof import('./src/components/Navigation.vue')['default']
