@@ -206,40 +206,10 @@ async function updatePreview() {
 </script>
 
 <template>
-  <div position="relative" h="full">
-    <div
-      ref="container"
-      w="full"
-      h="full"
-      flex="~"
-      class="preview-container"
-      place="items-center content-center"
-    ></div>
-    <!-- <div
-      v-if="shouldDisplaySameOriginError"
-      position="absolute inset-0"
-      bg="dark-900"
-      grid="~"
-      place="items-center content-center"
-      space="y-4"
-    >
-      <carbon-warning-alt w="16" h="16" text="yellow-500" />
-      <div class="prose" text="center dark:(light-900 opacity-70)" font="medium">
-        This playground needs access to localstorage, indexdb, and cookies on this domain. Make sure you trust this
-        code before allowing access.
-      </div>
-      <div flex="~ row" space="x-2">
-        <Button small>
-          <ic-round-open-in-new />
-          Learn More
-        </Button>
-        <Button small warn @click="enableSameOrigin = true">
-          <carbon-checkmark />
-          Allow
-        </Button>
-      </div>
-    </div> -->
-  </div>
+  <div
+    ref="container"
+    class="preview-container"
+  ></div>
 </template>
 
 <style>

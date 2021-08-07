@@ -52,6 +52,7 @@ const enabled = computed(() => preview.size === 'Default')
           <Hako
             h="full"
             w="full"
+            overflow="hidden"
             :width="preview.resolution.width"
             :height="preview.resolution.height"
             :disable-scaling="enabled"
