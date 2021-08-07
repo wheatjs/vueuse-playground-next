@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Splitpanes, Pane } from 'splitpanes'
-import { Hako } from 'vue-hako'
+// import { Hako } from 'vue-hako'
 import { usePreview } from '~/store'
 
 const preview = usePreview()

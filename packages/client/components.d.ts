@@ -40,6 +40,7 @@ declare module 'vue' {
     EditorGroup: typeof import('./src/components/groups/EditorGroup.vue')['default']
     EditorTab: typeof import('./src/components/editor/EditorTab.vue')['default']
     EditorTabs: typeof import('./src/components/editor/EditorTabs.vue')['default']
+    Hako: typeof import('./src/components/ui/Hako.vue')['default']
     IconButton: typeof import('./src/components/ui/Button/IconButton.vue')['default']
     Listbox: typeof import('./src/components/ui/Listbox/Listbox.vue')['default']
     ListItem: typeof import('./src/components/ui/Listbox/ListItem.vue')['default']
