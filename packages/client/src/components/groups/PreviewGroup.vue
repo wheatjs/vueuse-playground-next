@@ -19,7 +19,7 @@ const height = computed(() => preview.sizes[preview.size][1])
         </template>
         <template #overflow>
           <UtilityButton small border="l-1 dark:dark-300" @click="preview.forceExecution()">
-            <carbon-renew />
+            <carbon-renew text="cyan-500" />
           </UtilityButton>
           <UtilityButton
             small
