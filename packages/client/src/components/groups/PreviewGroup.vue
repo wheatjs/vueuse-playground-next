@@ -48,18 +48,25 @@ const enabled = computed(() => preview.size === 'Default')
             </template>
           </Listbox>
         </template>
-        <Suspense>
-          <Hako
-            h="full"
-            w="full"
-            overflow="hidden"
-            :width="preview.resolution.width"
-            :height="preview.resolution.height"
-            :disable-scaling="enabled"
-          >
-            <Preview bg="dark:dark-700 light-100" />
-          </Hako>
-        </Suspense>
+        <div
+          h="full"
+          w="full"
+          position="relative"
+          overflow="hidden"
+        >
+          <Suspense>
+            <Hako
+              h="full"
+              w="full"
+              overflow="hidden"
+              :width="preview.resolution.width"
+              :height="preview.resolution.height"
+              :disable-scaling="enabled"
+            >
+              <Preview bg="dark:dark-700 light-100" />
+            </Hako>
+          </Suspense>
+        </div>
       </Container>
     </Pane>
     <Pane size="25">
