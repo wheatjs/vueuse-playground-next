@@ -58,6 +58,7 @@ export interface FileOperationEvent extends BaseEvent {
 
 export interface PackageAddEvent extends BaseEvent {
   name: string
+  version?: string
 }
 
 export interface PackageRemoveEvent extends BaseEvent {

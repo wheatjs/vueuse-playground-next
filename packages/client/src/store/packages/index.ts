@@ -4,8 +4,8 @@ import { compare } from 'semver'
 import { resolvePackage, resolvePackageVersions } from './resolver'
 import { PacakgeVersions, PlaygroundPackage } from './types'
 
-const addPackageHook = createEventHook<string>()
-const removePackageHook = createEventHook<string>()
+const addPackageHook = createEventHook<{ name: string; version?: string; silent?: boolean }>()
+const removePackageHook = createEventHook<{ name: string; silent?: boolean }>()
 
 const CDN = import.meta.env.VITE_PACKAGE_CDN || 'https://unpkg.com/'
 const url = (p: PlaygroundPackage) => `${CDN}${p.name}@${p.version}/${p.entry}`
@@ -52,7 +52,7 @@ export const usePackages = defineStore({
      *
      * @param name Package name
      */
-    async addPackage(name: string, version?: string) {
+    async addPackage(name: string, version?: string, silent = false) {
       this.isAcquiringTypes = true
 
       const pendingPackages = [
@@ -76,7 +76,12 @@ export const usePackages = defineStore({
       this.packages = this.packages.filter((p, i) => this.packages.findIndex(({ name }) => name === p.name) === i)
 
       this.isAcquiringTypes = false
-      addPackageHook.trigger(name)
+
+      addPackageHook.trigger({
+        name,
+        version,
+        silent,
+      })
     },
 
     /**
@@ -84,9 +89,13 @@ export const usePackages = defineStore({
      *
      * @param name Package name
      */
-    async removePackage(name: string) {
+    async removePackage(name: string, silent = false) {
       this.packages = this.packages.filter(p => p.name !== name)
-      removePackageHook.trigger(name)
+
+      removePackageHook.trigger({
+        name,
+        silent,
+      })
     },
 
     async resolveVersions(name: string) {

@@ -118,8 +118,14 @@ export class CollaborationManager {
     /**
      * Non-Socket Listeners
      */
-    onAddPackage(name => this.emitPackageAddEvent({ name }))
-    onRemovePackage(name => this.emitPackageRemoveEvent({ name }))
+    onAddPackage((meta) => {
+      if (!meta.silent)
+        this.emitPackageAddEvent(meta)
+    })
+    onRemovePackage((meta) => {
+      if (!meta.silent)
+        this.emitPackageRemoveEvent(meta)
+    })
 
     onFileCreated((name) => {
       this.emitFileAddEvent({ file: filesystem.exportFile(filesystem.files[name]) })
@@ -247,12 +253,12 @@ export class CollaborationManager {
     filesystem.deleteFile(name, true)
   }
 
-  private onPackageAdd({ name }: PackageAddEvent) {
-    this.packages.addPackage(name)
+  private onPackageAdd({ name, version }: PackageAddEvent) {
+    this.packages.addPackage(name, version, true)
   }
 
   private onPackageRemove({ name }: PackageRemoveEvent) {
-    this.packages.removePackage(name)
+    this.packages.removePackage(name, true)
   }
 
   private onEditorCursor(data: EditorCursorEvent) {
