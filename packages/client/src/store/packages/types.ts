@@ -13,3 +13,8 @@ export interface PackageMetadata {
   module: string
   dependencies: Record<string, string>
 }
+
+export interface PacakgeVersions {
+  tags: Record<string, string>
+  versions: string[]
+}

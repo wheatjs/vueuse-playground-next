@@ -70,6 +70,30 @@ html.dark {
   background-size: 1em;
 }
 
+.editor-packages-version {
+  padding-left: 0.25em;
+}
+
+.editor-packages-version::after {
+  content: 'v0.5.2';
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+  line-height: 1.2em;
+  @apply cursor-pointer rounded text-dark-50 bg-dark-50 bg-opacity-15 font-bold;
+}
+
+.dark .editor-packages-version::after {
+  @apply text-light-900 text-opacity-45 bg-dark-100 bg-opacity-30  font-bold;
+}
+
+.editor-packages-version:hover::after {
+  @apply bg-green-400 bg-opacity-20 text-green-600;
+}
+
+.dark .editor-packages-version:hover::after {
+  @apply bg-green-400 bg-opacity-20 text-green-300;
+}
+
 .dark .mtk1 {
   color: white !important;
 }

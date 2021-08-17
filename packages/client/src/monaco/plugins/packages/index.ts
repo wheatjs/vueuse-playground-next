@@ -2,7 +2,8 @@ import type { editor as Editor } from 'monaco-editor'
 import { babelParse as parse } from '@vue/compiler-sfc'
 import { EditorPlugin } from '../types'
 import { useMonacoImport } from '~/monaco'
-import { usePackages } from '~/store'
+import { useStyleSheet } from '~/hooks/useStylesheet'
+import { usePackages, onAddPackage, onRemovePackage } from '~/store'
 
 interface State {
   decorations: string[]
@@ -15,6 +16,8 @@ const state: State = {
   decorations: [],
   possiblePackages: {},
 }
+
+const { rules } = useStyleSheet()
 
 async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
   const monaco = await useMonacoImport()
@@ -29,6 +32,18 @@ async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
   const ast = parse(text, { sourceType: 'module', strictMode: false })
   const decorations: Editor.IModelDecoration[] = []
   state.possiblePackages = {}
+
+  rules.value = packages
+    .packages
+    .filter(({ version }) => version)
+    .reduce((obj, item) => {
+      const version = item.version?.replaceAll('.', '')
+
+      return {
+        ...obj,
+        [`.package-version${version}::after`]: `content: 'v${item.version}';`,
+      }
+    }, {})
 
   if (ast.program.body) {
     for (const node of ast.program.body) {
@@ -45,13 +60,39 @@ async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
               ownerId: 0,
               range: new monaco.Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
               options: {
-                afterContentClassName: `editor-packages-install package-name-${i}'`,
+                afterContentClassName: `editor-packages-install package-name-${i}`,
                 hoverMessage: {
                   value: `${node.source.value} is not installed. \n\n Click to install package.`,
                 },
               },
             })
           }
+
+          i++
+        }
+
+        if (installed.includes(node.source.value) && !(node.source.value as string).startsWith('.') && node.source.value !== 'vue') {
+          const startPosition = editor.getModel()?.getPositionAt(node.start!)
+          const endPosition = editor.getModel()?.getPositionAt(node.end!)
+
+          state.possiblePackages[i] = node.source.value
+
+          const version = packages.packages.find(({ name }) => name === node.source.value)?.version
+
+          if (startPosition && endPosition) {
+            decorations.push({
+              id: node.start!,
+              ownerId: 0,
+              range: new monaco.Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
+              options: {
+                afterContentClassName: `editor-packages-version package-name-${i} package-version${version?.replaceAll('.', '')}`,
+                hoverMessage: {
+                  value: `${node.source.value} is using version ${version}. \n\n Click to change package version.`,
+                },
+              },
+            })
+          }
+
           i++
         }
       }
@@ -79,7 +120,20 @@ export const PackagesDecoration: EditorPlugin = {
           }
         })
       }
+
+      if (e.target.element?.classList.contains('editor-packages-version')) {
+        e.target.element.classList.forEach((value) => {
+          if (value.includes('package-name')) {
+            const name = state.possiblePackages[value.replace('package-name-', '')]
+            if (name)
+              pacakges.openVersionDialog(name)
+          }
+        })
+      }
     })
+
+    onAddPackage(() => this.onContentChanged(editor))
+    onRemovePackage(() => this.onContentChanged(editor))
   },
   onContentChanged(editor) {
     doDecorations(editor)

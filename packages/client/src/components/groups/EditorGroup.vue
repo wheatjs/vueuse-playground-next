@@ -59,7 +59,7 @@ const type = computed(() => {
             <template #title>
               <ContainerTitle :type="type" />
               <span flex="1"></span>
-              <template v-if="packages.isResolving">
+              <template v-if="packages.isAcquiringTypes">
                 <span text="xs dark:light-900 dark:opacity-50">
                   Acquiring Types
                 </span>

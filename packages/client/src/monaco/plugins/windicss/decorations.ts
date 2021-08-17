@@ -26,7 +26,7 @@ interface Provider {
   decoration: Editor.IModelDecoration[]
 }
 
-const { rules } = useStyleSheet('__windicss_styles__')
+const { rules } = useStyleSheet()
 const state: State = {
   decorations: [],
 }

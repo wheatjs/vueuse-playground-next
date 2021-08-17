@@ -1,30 +1,49 @@
 import { defineStore } from 'pinia'
 import { createEventHook } from '@vueuse/core'
-import { resolvePackage } from './resolver'
-import { PlaygroundPackage } from './types'
+import { compare } from 'semver'
+import { resolvePackage, resolvePackageVersions } from './resolver'
+import { PacakgeVersions, PlaygroundPackage } from './types'
 
 const addPackageHook = createEventHook<string>()
 const removePackageHook = createEventHook<string>()
 
-const CDN = import.meta.env.VITE_CDN || 'https://unpkg.com/'
+const CDN = import.meta.env.VITE_PACKAGE_CDN || 'https://unpkg.com/'
 const url = (p: PlaygroundPackage) => `${CDN}${p.name}@${p.version}/${p.entry}`
 
 export interface UsePackagesState {
+  versions: Record<string, PacakgeVersions>
   packages: PlaygroundPackage[]
   isAcquiringTypes: boolean
+  isVersionDialogOpen: boolean
+  currentPackageName: string | null
 }
 
 export const usePackages = defineStore({
   id: 'packages',
   state() {
     return {
+      versions: {},
       packages: [],
       isAcquiringTypes: false,
+      isVersionDialogOpen: false,
+      currentPackageName: null,
     } as UsePackagesState
   },
   getters: {
     importMap(): string {
-      return `{ "imports": { ${this.packages.map(p => url(p)).join(',\n')} } }`
+      return `{ "imports": { ${this.packages.map(p => `"${p.name}": "${url(p)}"`).join(',\n')} } }`
+    },
+    currentVersions(state: UsePackagesState) {
+      if (state.currentPackageName && state.currentPackageName in state.versions)
+        return state.versions[state.currentPackageName]
+
+      return null
+    },
+    currentPackage(state: UsePackagesState) {
+      if (state.currentPackageName)
+        return state.packages.find(({ name }) => name === state.currentPackageName)
+
+      return null
     },
   },
   actions: {
@@ -36,12 +55,25 @@ export const usePackages = defineStore({
     async addPackage(name: string, version?: string) {
       this.isAcquiringTypes = true
 
-      const packages = await resolvePackage(name, version)
-
-      this.packages = [
-        ...this.packages.filter(p => packages.findIndex(x => x.name === p.name)),
-        ...packages,
+      const pendingPackages = [
+        ...this.packages,
+        ...await resolvePackage(name, version),
       ]
+
+      this.packages = pendingPackages.filter((_package, index) => {
+        const shouldSkip = pendingPackages.some((p, _index) => {
+          if (p.name === _package.name) {
+            if (index !== _index)
+              return compare(_package.version, p.version) < 0
+          }
+
+          return false
+        })
+
+        return !shouldSkip
+      })
+
+      this.packages = this.packages.filter((p, i) => this.packages.findIndex(({ name }) => name === p.name) === i)
 
       this.isAcquiringTypes = false
       addPackageHook.trigger(name)
@@ -53,7 +85,27 @@ export const usePackages = defineStore({
      * @param name Package name
      */
     async removePackage(name: string) {
+      this.packages = this.packages.filter(p => p.name !== name)
       removePackageHook.trigger(name)
+    },
+
+    async resolveVersions(name: string) {
+      if (name in this.versions)
+        return
+
+      this.versions[name] = await resolvePackageVersions(name)
+    },
+
+    openVersionDialog(name: string) {
+      this.currentPackageName = name
+      setTimeout(() => {
+        this.isVersionDialogOpen = true
+      })
+    },
+
+    closeVersionDialog() {
+      this.currentPackageName = null
+      this.isVersionDialogOpen = false
     },
   },
 })

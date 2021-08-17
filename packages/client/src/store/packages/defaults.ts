@@ -12,14 +12,10 @@ export const defaults: Record<string, PackageDefault> = {
   'pinia': {
     version: 'next',
   },
-
-  'vue-global-api': {
-    version: '0.2.4',
-  },
 }
 
-export function getDefault(name: string, version: string) {
-  if (name in defaults) {
+export function getDefault(name: string, version?: string) {
+  if (name in defaults && !version) {
     const d = defaults[name]
 
     return {

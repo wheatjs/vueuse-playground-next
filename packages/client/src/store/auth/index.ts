@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getAuth, GithubAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth'
 import type { User } from 'firebase/auth'
-import { auth } from '~/services/firebase'
+import { auth } from './firebase'
 
 export interface UseAuthState {
   user: User | null

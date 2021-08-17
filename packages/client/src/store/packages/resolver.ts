@@ -1,8 +1,10 @@
-import { PackageMetadata, PlaygroundPackage } from './types'
+import { PackageMetadata, PlaygroundPackage, PacakgeVersions } from './types'
 import { getDefault } from './defaults'
 
-const CDN = import.meta.env.VITE_CDN || 'https://cdn.jsdelivr.net/npm/'
+const CDN = import.meta.env.VITE_PACKAGE_CDN || 'https://unpkg.com/'
+const DATA_CDN = import.meta.env.VITE_PACKAGE_DATA_CDN || 'https://data.jsdelivr.com/v1/package/npm/'
 const url = (path: string) => `${CDN}${path}`
+const dataUrl = (path: string) => `${DATA_CDN}${path}`
 
 /**
  * Resolves the package.json for a package
@@ -11,7 +13,7 @@ const url = (path: string) => `${CDN}${path}`
  * @param version Package version
  */
 export async function resolvePackageMetadata(name: string, version: string): Promise<PackageMetadata | Error> {
-  const response = await fetch(url(`${name}@${version}`))
+  const response = await fetch(url(`${name}${version ? `@${version}` : ''}/package.json`))
 
   if (!response.ok)
     return new Error('Error Resolving Package Data')
@@ -42,7 +44,7 @@ export async function resolvePackageTypes(metadata: PackageMetadata): Promise<st
  *
  * @param name Package name
  */
-export async function resolvePackage(name: string, version = 'latest') {
+export async function resolvePackage(name: string, version?: string) {
   /**
    * Start out by resolving the packages metadata
    * then resolve the types for that package.
@@ -75,5 +77,14 @@ export async function resolvePackage(name: string, version = 'latest') {
     )
   }
 
-  return packages
+  return packages.filter((p, i) => packages.findIndex(x => x.name === p.name) === i)
+}
+
+export async function resolvePackageVersions(name: string) {
+  const response = await fetch(dataUrl(name))
+
+  if (!response.ok)
+    throw new Error('Error Resolving Package Versions')
+
+  return await response.json() as PacakgeVersions
 }

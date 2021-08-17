@@ -1,3 +1,9 @@
+<script lang="ts">
+export default {
+  inheritAttrs: false,
+}
+</script>
+
 <script setup lang="ts">
 import { defineProps } from 'vue'
 import { useVModel } from '@vueuse/core'
@@ -10,18 +16,20 @@ const value = useVModel(props)
   <Listbox v-model="value">
     <div position="relative">
       <ListboxButton
+        v-bind="$attrs"
         text="xs"
         outline="focus:none"
-        flex="~"
         h="8"
-        items="center"
         p="x-2"
-        space="x-2"
         border="l-1 dark:dark-300"
         position="relative"
+        display="block"
       >
-        <slot :value="value" />
-        <carbon-chevron-down />
+        <div flex="~ row" items="center" space="x-1" w="full">
+          <slot :value="value" />
+          <span flex="1"></span>
+          <carbon-chevron-down />
+        </div>
       </ListboxButton>
       <ListboxOptions
         position="absolute top-5 right-0"

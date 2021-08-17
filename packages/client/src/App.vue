@@ -18,4 +18,5 @@ auth.init()
   <Download />
   <Collaboration />
   <ReloadPrompt />
+  <PackageVersionManager />
 </template>
