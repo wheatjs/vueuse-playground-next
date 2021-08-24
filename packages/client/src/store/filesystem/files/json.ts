@@ -23,8 +23,8 @@ export class JsonFile extends BaseFile {
     return [this.json]
   }
 
-  public override exportDocuments() {
-    return { json: this.json.export() }
+  public override exportDocuments(asPlainText = false) {
+    return { json: asPlainText ? this.json.text : this.json.export() }
   }
 
   public override importDocuments(imports: any) {

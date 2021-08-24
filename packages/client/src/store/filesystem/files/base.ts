@@ -28,7 +28,7 @@ export class BaseFile {
     return []
   }
 
-  public exportDocuments(): Record<string, Blob> {
+  public exportDocuments(asPlainText = false): Record<string, Blob | string> {
     return {}
   }
 

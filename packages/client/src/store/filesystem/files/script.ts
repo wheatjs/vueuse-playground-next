@@ -23,8 +23,8 @@ export class ScriptFile extends BaseFile {
     return [this.script]
   }
 
-  public override exportDocuments() {
-    return { script: this.script.export() }
+  public override exportDocuments(asPlainText = false) {
+    return { script: asPlainText ? this.script.text : this.script.export() }
   }
 
   public override importDocuments(imports: any) {

@@ -1,23 +1,47 @@
 import { defineStore } from 'pinia'
-import { getAuth, GithubAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth'
+import { nanoid } from 'nanoid'
+import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth'
 import type { User } from 'firebase/auth'
+import { useLocalStorage } from '@vueuse/core'
+import { randomUsername } from '@playground/shared'
 import { auth } from './firebase'
 
 export interface UseAuthState {
+  client: string
   user: User | null
   isAuthenticated: boolean
   isDialogOpen: boolean
 }
 
+const username = useLocalStorage('playground-username', randomUsername())
+const clientId = useLocalStorage('playground-client-id', nanoid())
+
 export const useAuth = defineStore({
   id: 'auth',
   state() {
     return {
+      client: clientId.value,
       user: null,
-      isAnonymous: false,
       isAuthenticated: false,
       isDialogOpen: false,
     } as UseAuthState
+  },
+  getters: {
+
+    username(state: UseAuthState) {
+      if (state.user?.displayName)
+        return state.user.displayName
+
+      return username.value
+    },
+
+    avatar(state: UseAuthState) {
+      if (state.user?.photoURL)
+        return state.user.photoURL
+
+      return `https://avatars.dicebear.com/api/bottts/${state.client}.svg`
+    },
+
   },
   actions: {
 
@@ -40,12 +64,6 @@ export const useAuth = defineStore({
         .then(() => {
           this.closeDialog()
         })
-        .catch((error) => {
-          console.error('Sign in Failed', error)
-        })
-    },
-    authenticateAnonymously() {
-      signInAnonymously(auth)
         .catch((error) => {
           console.error('Sign in Failed', error)
         })

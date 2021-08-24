@@ -22,9 +22,11 @@ import {
   FileDeleteEvent,
 
   DocumentChangeEvent,
+  SyncMetadataEvent,
 } from '@playground/shared'
 import type { editor as Editor } from 'monaco-editor'
 import { createSingletonPromise } from '@vueuse/core'
+import { useAuth } from '../auth'
 import { useEditors } from './editors'
 import { useCollaboration, usePackages, onAddPackage, onRemovePackage, filesystem, onFileCreated, onFileDeleted } from '~/store'
 import type { MonacoCollaborationManager } from '~/monaco/collaboration'
@@ -47,10 +49,12 @@ export interface FileEditor {
 }
 
 export class CollaborationManager {
+  // @ts-ignore
   private client: Socket
   private collaboration = useCollaboration()
   private editors = useEditors()
   private packages = usePackages()
+  private auth = useAuth()
   private fileEditors: Record<string, FileEditor> = {}
   private hasSynced = false
   private hasAttached = false
@@ -62,7 +66,8 @@ export class CollaborationManager {
         // @ts-ignore
         query: {
           ...removeEmpty({
-            username: this.collaboration.username,
+            username: this.auth.username,
+            avatar: this.auth.avatar,
             session,
           }),
         },
@@ -81,12 +86,6 @@ export class CollaborationManager {
   public disconnect() {
     this.client.disconnect()
     this.collaboration.collaborators = []
-    // this.fileEditors.forEach(({ manager }) => {
-    //   manager.disconnect()
-    //   manager.removeAllCursors()
-    //   manager.removeAllSelections()
-    // })
-    // this.fileEditors = []
     this.hasSynced = false
   }
 
@@ -101,6 +100,7 @@ export class CollaborationManager {
     this.client.on(SocketEvent.SyncCollaborators, (data: SyncCollaboratorsEvent) => this.onSyncCollaborators(data))
     this.client.on(SocketEvent.SyncFilesRequest, (data: BaseEvent) => this.onSyncFilesRequest(data))
     this.client.on(SocketEvent.SyncFilesResponse, (data: SyncFilesResponseEvent) => this.onSyncFilesResponse(data))
+    this.client.on(SocketEvent.SyncMetadata, (data: SyncMetadataEvent) => this.onSyncMetadata(data))
 
     this.client.on(SocketEvent.PackageAdd, (data: PackageAddEvent) => this.onPackageAdd(data))
     this.client.on(SocketEvent.PackageRemove, (data: PackageRemoveEvent) => this.onPackageRemove(data))
@@ -114,6 +114,11 @@ export class CollaborationManager {
     this.client.on(SocketEvent.DocumentChange, (data: DocumentChangeEvent) => this.onDocumentChange(data))
 
     this.attachDocumentListeners()
+
+    watch(() => [this.auth.username, this.auth.avatar], () => this.emitSyncMetadata({
+      avatar: this.auth.avatar,
+      username: this.auth.username,
+    }), { immediate: true })
 
     /**
      * Non-Socket Listeners
@@ -191,7 +196,10 @@ export class CollaborationManager {
   }
 
   private onConnect() { this.collaboration.isConnected = true }
-  private onDisconnect() { this.collaboration.isConnected = false }
+  private onDisconnect() {
+    this.collaboration.isConnected = false
+    this.collaboration.session = null
+  }
 
   private onCollaboratorDisconnect({ sender }: CollaboratorDisconnetEvent) {
     Object.values(this.fileEditors).forEach(({ manager }) => {
@@ -201,8 +209,8 @@ export class CollaborationManager {
   }
 
   private onRoomCreated({ session, id }: RoomCreatedEvent) {
-    this.collaboration.session = session
     this.collaboration.id = id
+    this.collaboration.session = session
     this.hasSynced = true
   }
 
@@ -212,8 +220,23 @@ export class CollaborationManager {
     this.emitFileSyncRequest()
   }
 
+  private onSyncMetadata({ sender, avatar, username, color }: SyncMetadataEvent) {
+    this.collaboration.collaborators = this.collaboration.collaborators.map((collaborator) => {
+      if (collaborator.id !== sender)
+        return collaborator
+
+      return {
+        ...collaborator,
+        avatar,
+        username,
+        color,
+      }
+    })
+  }
+
   private onSyncCollaborators({ collaborators }: SyncCollaboratorsEvent) {
     this.collaboration.collaborators = collaborators
+    this.emitSyncMetadata({ username: this.auth.username, avatar: this.auth.avatar })
   }
 
   private onDocumentChange({ filename, changes }: DocumentChangeEvent) {
@@ -283,6 +306,10 @@ export class CollaborationManager {
       // else
       //   manager.removeSelection(data.sender)
     })
+  }
+
+  public emitSyncMetadata(data: EmitParameter<SyncMetadataEvent>) {
+    this.emit(SocketEvent.SyncMetadata, data)
   }
 
   public emitCursorEvent(data: EmitParameter<EditorCursorEvent>) {

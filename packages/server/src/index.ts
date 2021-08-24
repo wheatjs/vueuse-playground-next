@@ -1,20 +1,20 @@
-// import fastify from 'fastify'
-// import fastifyCors from 'fastify-cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
-// import { registerRoutes } from './routes'
+import App from 'express'
+import cors from 'cors'
+import { json } from 'body-parser'
+import { registerRoutes } from './routes'
 import { registerSockets } from './sockets'
 
 export async function main() {
-  const server = createServer()
-  // const app = fastify({
+  const app = App()
+  const server = createServer(app)
 
-  // })
+  app.use(cors({
+    origin: '*',
+  }))
 
-  // app.register(fastifyCors, {
-  //   origin: '*',
-  //   methods: ['GET', 'POST', 'PUT'],
-  // })
+  app.use(json())
 
   const io = new Server(server, {
     cors: {
@@ -23,15 +23,11 @@ export async function main() {
     },
   })
 
-  // await registerRoutes(app)
+  await registerRoutes(app)
   await registerSockets(io)
 
-  // io.listen(process.env.port || 4000)
   server.listen(process.env.port || 4000, () => {
-    console.log(`Listening on ${process.env.port || 4000}`)
+    // eslint-disable-next-line no-console
+    console.log(`Listening on http://localhost:${process.env.port || 4000}`)
   })
-
-  // app.listen(process.env.port || 4000, (e, address) => {
-  //   console.log(`Listening on ${address}`) // eslint-disable-line no-console
-  // })
 }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useShare, useDownload, useCollaboration, useAuth } from '~/store'
+import { useShare, useDownload, useCollaboration, useAuth, usePersistence } from '~/store'
 import { toggleDark, isDark } from '~/hooks'
 
 const share = useShare()
 const download = useDownload()
 const collaboration = useCollaboration()
 const auth = useAuth()
+const persistence = usePersistence()
 </script>
 
 <template>
@@ -26,6 +27,9 @@ const auth = useAuth()
     </IconButton>
     <IconButton class="transform hover:-rotate-8" @click="download.openDialog()">
       <carbon-download />
+    </IconButton>
+    <IconButton @click="persistence.save()">
+      <carbon-save />
     </IconButton>
     <IconButton
       class="transform hover:-rotate-8"

@@ -23,8 +23,8 @@ export class CssFile extends BaseFile {
     return [this.css]
   }
 
-  public override exportDocuments() {
-    return { css: this.css.export() }
+  public override exportDocuments(asPlainText = false) {
+    return { css: asPlainText ? this.css.text : this.css.export() }
   }
 
   public override importDocuments(imports: any) {

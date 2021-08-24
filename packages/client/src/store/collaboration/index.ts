@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { Collaborator, randomUsername } from '@playground/shared'
+import { useAuth } from '../auth'
 
 export interface UseCollaborationState {
   id: string | null
@@ -10,8 +11,7 @@ export interface UseCollaborationState {
   collaborators: Collaborator[]
 }
 
-export const useCollaboration = defineStore({
-  id: 'collaboration',
+export const useCollaboration = defineStore('collaboration', {
   state: () => ({
     id: null,
     username: randomUsername(),
@@ -21,18 +21,17 @@ export const useCollaboration = defineStore({
     collaborators: [],
   }) as UseCollaborationState,
   getters: {
-    shareLink(state: UseCollaborationState) {
-      const url = new URL(window.location.href)
-
-      if (url.searchParams.has('room'))
-        url.searchParams.delete('room')
-
-      url.searchParams.append('room', state.session || '')
-      return url.toString()
-    },
-
     otherCollaborators(state: UseCollaborationState) {
       return state.collaborators.filter(({ id }) => id !== state.id)
+    },
+
+    getUsername(state: UseCollaborationState) {
+      const auth = useAuth()
+
+      if (auth.isAuthenticated)
+        return auth.user?.displayName || state.username
+
+      return state.username
     },
   },
   actions: {

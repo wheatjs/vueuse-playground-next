@@ -11,6 +11,8 @@ export enum SocketEvent {
   SyncFilesRequest = 'sync-files-request',
   SyncFilesResponse = 'sync-files-response',
 
+  SyncMetadata = 'sync-metadata',
+
   PackageAdd = 'package-add',
   PackageRemove = 'package-remove',
 
@@ -27,6 +29,7 @@ export enum SocketEvent {
 export interface Collaborator {
   id: string
   username: string
+  avatar: string
 }
 
 interface ExportedFile {
@@ -73,6 +76,12 @@ export interface RoomCreatedEvent extends BaseEvent {
 export interface RoomJoinedEvent extends BaseEvent {
   id: string
   session: string
+}
+
+export interface SyncMetadataEvent extends BaseEvent {
+  username: string
+  avatar: string
+  color?: string
 }
 
 export interface SyncCollaboratorsEvent extends BaseEvent {

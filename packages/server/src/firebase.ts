@@ -1,17 +1,23 @@
 import admin from 'firebase-admin'
-import { ServiceKey } from './serviceKey'
+import { getServiceKey } from './serviceKey'
 
 /**
  * Manages Firestore interactions
  */
 export class FirebaseManager {
   private db: FirebaseFirestore.Firestore
+  private auth: admin.auth.Auth
 
   constructor() {
     admin.initializeApp({
-      credential: admin.credential.cert((ServiceKey as any)),
+      credential: admin.credential.cert(getServiceKey()),
     })
+    this.auth = admin.auth()
     this.db = admin.firestore()
+  }
+
+  public authorize(token: string) {
+    return this.auth.verifyIdToken(token)
   }
 
   /**

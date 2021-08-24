@@ -9,7 +9,7 @@ export interface ExportedFile {
   type: string
   hide: boolean
   isProtected: boolean
-  documents: Record<string, Blob>
+  documents: Record<string, Blob | string>
 }
 
 export interface FSFile {
@@ -179,13 +179,13 @@ class Filesystem {
     this.onUpdate()
   }
 
-  public exportFile(file: BaseFile) {
+  public exportFile(file: BaseFile, asPlainText = false) {
     return {
       filename: file.filename,
       type: file.type,
       hide: file.hide,
       isProtected: file.isProtected,
-      documents: file.exportDocuments(),
+      documents: file.exportDocuments(asPlainText),
     }
   }
 
@@ -229,8 +229,8 @@ class Filesystem {
     setTimeout(() => this.onUpdate(file.filename), 100)
   }
 
-  public exportFiles(): ExportedFile[] {
-    return Object.values(this.files).map(file => this.exportFile(file))
+  public exportFiles(asPlainText = false): ExportedFile[] {
+    return Object.values(this.files).map(file => this.exportFile(file, asPlainText))
   }
 
   public importFiles(files: any[]) {

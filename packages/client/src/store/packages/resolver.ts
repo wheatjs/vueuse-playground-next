@@ -56,7 +56,7 @@ export async function resolvePackage(name: string, version?: string) {
   const _default = getDefault(name, version)
 
   const packages: PlaygroundPackage[] = []
-  const metadata = await resolvePackageMetadata(_default.name, _default.version || version)
+  const metadata = await resolvePackageMetadata(_default.name, _default.version || version || '')
 
   if (!(metadata instanceof Error)) {
     const types = await resolvePackageTypes(metadata)

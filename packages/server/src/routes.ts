@@ -1,7 +1,8 @@
-import { FastifyInstance } from 'fastify'
+import { Express } from 'express'
+import { nanoid } from 'nanoid'
 import { FirebaseManager } from './firebase'
 
-export async function registerRoutes(server: FastifyInstance) {
+export async function registerRoutes(server: Express) {
   const firebase = new FirebaseManager()
 
   server.get('/:id', async(request, reply) => {
@@ -26,7 +27,17 @@ export async function registerRoutes(server: FastifyInstance) {
   })
 
   server.post('/create', async(request, reply) => {
+    const data = request.body
+    const auth = request.headers.authorization
 
+    if (auth) {
+      const a = await firebase.authorize(auth)
+      console.log(data, auth, a)
+    }
+
+    return reply.send({
+      message: 'Hey :)',
+    })
   })
 }
 

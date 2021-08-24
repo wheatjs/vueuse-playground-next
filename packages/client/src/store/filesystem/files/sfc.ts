@@ -43,11 +43,11 @@ export class SFCFile extends BaseFile {
     return [this.script, this.style, this.template]
   }
 
-  public override exportDocuments() {
+  public override exportDocuments(asPlainText = false) {
     return {
-      template: this.template.export(),
-      script: this.script.export(),
-      style: this.style.export(),
+      template: asPlainText ? this.template.text : this.template.export(),
+      script: asPlainText ? this.script.text : this.script.export(),
+      style: asPlainText ? this.style.text : this.style.export(),
     }
   }
 

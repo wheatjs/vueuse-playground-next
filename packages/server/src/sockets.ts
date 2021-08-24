@@ -22,7 +22,7 @@ export async function registerSockets(io: Server) {
 
     if (session) {
       socket.join(session)
-      socket.emit(SocketEvent.RoomJoined, { id: socket.id, sender: 'server', timestamp: Date.now() } as RoomJoinedEvent)
+      socket.emit(SocketEvent.RoomJoined, { id: socket.id, sender: 'server', timestamp: Date.now(), session } as RoomJoinedEvent)
 
       const usersInRoom = (await io.in(session).fetchSockets())
 
