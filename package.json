@@ -29,9 +29,9 @@
   "homepage": "https://github.com/wheatjs/vueuse-playground-next#readme",
   "devDependencies": {
     "@antfu/eslint-config": "^0.6.6",
-    "eslint": "^7.30.0",
-    "pnpm": "^6.10.1",
-    "tsup": "^4.12.5"
+    "eslint": "^7.32.0",
+    "pnpm": "^6.14.3",
+    "tsup": "^4.14.0"
   },
   "dependencies": {
     "dotenv": "^10.0.0"
