@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Splitpanes, Pane } from 'splitpanes'
-import { usePreview } from '~/store'
+import { usePreview, fs } from '~/store'
 
 const preview = usePreview()
 const enabled = computed(() => preview.size === 'Default')
@@ -76,6 +76,7 @@ const enabled = computed(() => preview.size === 'Default')
         </template>
         <div overflow="auto" w="full" h="full">
           <PreviewOutput />
+          <pre>{{ fs }}</pre>
         </div>
       </Container>
     </Pane>

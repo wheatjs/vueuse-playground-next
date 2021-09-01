@@ -20,7 +20,7 @@ export function generateStyles(html: string) {
     darkMode: 'class',
     attributify: true,
     plugins: [
-      typography,
+      typography(),
     ],
     theme: {
       extend: {

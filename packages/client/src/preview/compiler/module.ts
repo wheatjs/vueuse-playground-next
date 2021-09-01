@@ -14,10 +14,10 @@ const MAIN_FILE = 'App.vue'
 export function compileModulesForPreview() {
   if (filesystem.files[MAIN_FILE] instanceof SFCFile) {
     const sfcImports = processFile(filesystem.files[MAIN_FILE] as SFCFile)
-    const mainImports = processFile(filesystem.files['main.js'] as SFCFile)
+    const mainImports = processFile(filesystem.files['main.ts'] as SFCFile)
 
     const preImports = [sfcImports[0], mainImports[0]]
-    const postImports = new Set([...sfcImports.slice(1), ...mainImports.slice(1)])
+    const postImports = new Set([...sfcImports.slice(1).reverse(), ...mainImports.slice(1).reverse()])
 
     return [
       ...postImports,

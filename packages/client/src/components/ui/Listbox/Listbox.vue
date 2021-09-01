@@ -5,7 +5,6 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import { useVModel } from '@vueuse/core'
 import { Listbox, ListboxOptions, ListboxButton } from '@headlessui/vue'
 const props = defineProps<{ modelValue: string }>()

@@ -53,8 +53,8 @@ const setup = createSingletonPromise(async() => {
   if (!monaco)
     return
 
-  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-    ...monaco.languages.typescript.javascriptDefaults.getCompilerOptions(),
+  monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+    ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
     noUnusedLocals: false,
     noUnusedParameters: false,
     allowUnreachableCode: true,
@@ -64,11 +64,12 @@ const setup = createSingletonPromise(async() => {
     allowJs: true,
     importHelpers: true,
     noImplicitUseStrict: false,
+    isolatedModules: true,
   })
 
-  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+  monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
     // Ignore unused variable warnings
-    diagnosticCodesToIgnore: [6133, 6198],
+    diagnosticCodesToIgnore: [6133, 6198, 8006],
   })
 
   const [
@@ -96,15 +97,14 @@ const setup = createSingletonPromise(async() => {
     { content: localShims },
   ]
 
-  monaco.languages.typescript.javascriptDefaults.setExtraLibs([...builtinLibs])
+  monaco.languages.typescript.typescriptDefaults.setExtraLibs([...builtinLibs])
 
   const packages = usePackages()
-
   const globalModules = ['vue-global-api']
 
   watch(() => [fs.filenames, packages.packages], () => {
     const _packages = packages.packages
-      .filter(({ isResolving, types }) => !isResolving && types)
+      .filter(({ types }) => types)
       .map(({ name, types }) => {
         if (globalModules.includes(name)) {
           return {
@@ -129,7 +129,7 @@ const setup = createSingletonPromise(async() => {
         }
       })
 
-    monaco.languages.typescript.javascriptDefaults.setExtraLibs([
+    monaco.languages.typescript.typescriptDefaults.setExtraLibs([
       ...builtinLibs,
       ..._packages,
       ..._files,

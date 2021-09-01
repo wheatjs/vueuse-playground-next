@@ -1,5 +1,6 @@
-import { SFCDescriptor, BindingMetadata } from '@vue/compiler-sfc'
+import { SFCDescriptor, BindingMetadata, shouldTransformRef, transformRef } from '@vue/compiler-sfc'
 import * as defaultCompiler from '@vue/compiler-sfc'
+import { transform } from '@wheatjs/sucrase'
 import { generateStyles } from './windicss'
 import { fs } from '~/store'
 import { SFCFile } from '~/store/filesystem/files'
@@ -19,6 +20,12 @@ const defaultVueUrl = import.meta.env.PROD
   : `${location.origin}/src/vue-dev-proxy`
 
 export const vueRuntimeUrl = ref(defaultVueUrl)
+
+async function transformTS(src: string) {
+  return transform(src, {
+    transforms: ['typescript'],
+  }).code
+}
 
 export async function setVersion(version: string) {
   const compilerUrl = `https://unpkg.com/@vue/compiler-sfc@${version}/dist/compiler-sfc.esm-browser.js`
@@ -45,6 +52,14 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
   }
 
   if (!filename.endsWith('.vue')) {
+    if (shouldTransformRef(content))
+      content = transformRef(content, { filename }).code
+
+    if (filename.endsWith('.ts')) {
+      compiled.js = await transformTS(content)
+      return
+    }
+
     compiled.js = compiled.ssr = content
     fs.errors = []
     return
@@ -62,7 +77,6 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
 
   if (
     (descriptor.script && descriptor.script.lang)
-    || (descriptor.scriptSetup && descriptor.scriptSetup.lang)
     || descriptor.styles.some(s => s.lang)
     || (descriptor.template && descriptor.template.lang)
   ) {
@@ -81,7 +95,7 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
     ssrCode += code
   }
 
-  const clientScriptResult = doCompileScript(descriptor, id, false)
+  const clientScriptResult = await doCompileScript(descriptor, id, false)
   if (!clientScriptResult)
     return
 
@@ -91,7 +105,7 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
   // script ssr only needs to be performed if using <script setup> where
   // the render fn is inlined.
   if (descriptor.scriptSetup) {
-    const ssrScriptResult = doCompileScript(descriptor, id, true)
+    const ssrScriptResult = await doCompileScript(descriptor, id, true)
     if (!ssrScriptResult)
       return
 
@@ -143,7 +157,8 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
 
   // Compile windicss styles
   if (descriptor.template && descriptor.template.content)
-    css = generateStyles(descriptor.template.content)
+    css = generateStyles(content)
+    // css = generateStyles(descriptor.template.content)
 
   for (const style of descriptor.styles) {
     if (style.module) {
@@ -179,16 +194,17 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
   fs.errors = []
 }
 
-function doCompileScript(
+async function doCompileScript(
   descriptor: SFCDescriptor,
   id: string,
   ssr: boolean,
-): [string, BindingMetadata | undefined] | undefined {
+): Promise<[string, BindingMetadata | undefined] | undefined> {
   if (descriptor.script || descriptor.scriptSetup) {
     try {
       const compiledScript = SFCCompiler.compileScript(descriptor, {
         id,
         refSugar: true,
+        refTransform: true,
         inlineTemplate: true,
         templateOptions: {
           ssr,
@@ -206,6 +222,10 @@ function doCompileScript(
       code
         += `\n${
           SFCCompiler.rewriteDefault(compiledScript.content, COMP_IDENTIFIER)}`
+
+      if ((descriptor.script || descriptor.scriptSetup)!.lang === 'ts')
+        code = await transformTS(code)
+
       return [code, compiledScript.bindings]
     }
     catch (e) {

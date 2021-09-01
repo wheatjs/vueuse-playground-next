@@ -27,7 +27,7 @@ const templateModel = computed(() => {
   const currrentFile = filesystem.files[fs.currentFilename]
 
   if (!currrentFile) return null
-  if (currrentFile.filename === 'main.js') return settingsModel
+  if (currrentFile.filename === 'main.ts') return settingsModel
   if (currrentFile instanceof SFCFile) return currrentFile.template.model
 })
 
@@ -72,7 +72,7 @@ const type = computed(() => {
         <Pane v-if="templateModel || !scriptModel">
           <Container>
             <template #title>
-              <ContainerTitle v-if="fs.currentFilename !== 'main.js'" type="sfc:template" />
+              <ContainerTitle v-if="fs.currentFilename !== 'main.ts'" type="sfc:template" />
               <ContainerTitle v-else type="settings" />
               <!-- <span flex="1" />
               <div space="x-1">

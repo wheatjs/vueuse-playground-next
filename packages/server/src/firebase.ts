@@ -16,8 +16,13 @@ export class FirebaseManager {
     this.db = admin.firestore()
   }
 
-  public authorize(token: string) {
-    return this.auth.verifyIdToken(token)
+  public async authorize(token: string) {
+    try {
+      return await this.auth.verifyIdToken(token)
+    }
+    catch (error) {
+      return false
+    }
   }
 
   /**

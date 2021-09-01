@@ -1,5 +1,8 @@
 import type { editor as Editor } from 'monaco-editor'
 import { babelParse as parse } from '@vue/compiler-sfc'
+import { getTokens } from '@wheatjs/sucrase'
+import { Token } from '@wheatjs/sucrase/dist/parser/tokenizer'
+import { formatTokenType } from '@wheatjs/sucrase/dist/parser/tokenizer/types'
 import { EditorPlugin } from '../types'
 import { useMonacoImport } from '~/monaco'
 import { useStyleSheet } from '~/hooks/useStylesheet'
@@ -19,19 +22,55 @@ const state: State = {
 
 const { rules } = useStyleSheet()
 
+interface ImportDefinition {
+  name: string
+  start: number
+  end: number
+}
+
+function collectImportsFromToken(code: string, tokens: Token[]) {
+  const definedImports: ImportDefinition[] = []
+
+  let isInImport = false
+  let start = 0
+
+  for (const token of tokens) {
+    const type = formatTokenType(token.type)
+
+    if (type === 'import') {
+      isInImport = true
+      start = token.start
+    }
+    else if (type === 'string' && isInImport) {
+      isInImport = false
+
+      definedImports.push({
+        name: code.slice(token.start + 1, token.end - 1),
+        start,
+        end: token.end,
+      })
+    }
+  }
+
+  return definedImports
+}
+
 async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
   const monaco = await useMonacoImport()
 
   if (!monaco || !parse)
     return
 
-  let i = 0
   const packages = usePackages()
   const installed = packages.packages.map(({ name }) => name)
-  const text = editor.getValue()
-  const ast = parse(text, { sourceType: 'module', strictMode: false })
   const decorations: Editor.IModelDecoration[] = []
+  const text = editor.getValue()
+  const tokens = getTokens(text, { transforms: [] })
+  const imports = collectImportsFromToken(text, tokens)
+  let i = 0
   state.possiblePackages = {}
+
+  // const ast = parse(text, { sourceType: 'module', strictMode: false })
 
   rules.value = packages
     .packages
@@ -45,56 +84,59 @@ async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
       }
     }, {})
 
-  if (ast.program.body) {
-    for (const node of ast.program.body) {
-      if (node.type === 'ImportDeclaration' && node.source.type === 'StringLiteral' && node.source.value.length > 0) {
-        if (!installed.includes(node.source.value) && !(node.source.value as string).startsWith('.') && node.source.value !== 'vue') {
-          const startPosition = editor.getModel()?.getPositionAt(node.start!)
-          const endPosition = editor.getModel()?.getPositionAt(node.end!)
+  for (const _import of imports) {
+    if (!installed.includes(_import.name) && !_import.name.startsWith('.') && _import.name !== 'vue') {
+      const model = editor.getModel()
 
-          state.possiblePackages[i] = node.source.value
+      if (model) {
+        const startPosition = model.getPositionAt(_import.start)
+        const endPosition = model.getPositionAt(_import.end)
 
-          if (startPosition && endPosition) {
-            decorations.push({
-              id: node.start!,
-              ownerId: 0,
-              range: new monaco.Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
-              options: {
-                afterContentClassName: `editor-packages-install package-name-${i}`,
-                hoverMessage: {
-                  value: `${node.source.value} is not installed. \n\n Click to install package.`,
-                },
+        state.possiblePackages[i] = _import.name
+
+        if (startPosition && endPosition) {
+          decorations.push({
+            id: _import.start.toString(),
+            ownerId: 0,
+            range: new monaco.Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
+            options: {
+              afterContentClassName: `editor-packages-install package-name-${i}`,
+              hoverMessage: {
+                value: `${_import.name} is not installed. \n\n Click to install package.`,
               },
-            })
-          }
-
-          i++
+            },
+          })
         }
 
-        if (installed.includes(node.source.value) && !(node.source.value as string).startsWith('.') && node.source.value !== 'vue') {
-          const startPosition = editor.getModel()?.getPositionAt(node.start!)
-          const endPosition = editor.getModel()?.getPositionAt(node.end!)
+        i++
+      }
+    }
 
-          state.possiblePackages[i] = node.source.value
+    if (installed.includes(_import.name) && !_import.name.startsWith('.') && _import.name !== 'vue') {
+      const model = editor.getModel()
 
-          const version = packages.packages.find(({ name }) => name === node.source.value)?.version
+      if (model) {
+        const startPosition = model.getPositionAt(_import.start)
+        const endPosition = model.getPositionAt(_import.end)
 
-          if (startPosition && endPosition) {
-            decorations.push({
-              id: node.start!,
-              ownerId: 0,
-              range: new monaco.Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
-              options: {
-                afterContentClassName: `editor-packages-version package-name-${i} package-version${version?.replaceAll('.', '')}`,
-                hoverMessage: {
-                  value: `${node.source.value} is using version ${version}. \n\n Click to change package version.`,
-                },
+        state.possiblePackages[i] = _import.name
+        const version = packages.packages.find(({ name }) => name === _import.name)?.version
+
+        if (startPosition && endPosition) {
+          decorations.push({
+            id: _import.start.toString(),
+            ownerId: 0,
+            range: new monaco.Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column),
+            options: {
+              afterContentClassName: `editor-packages-version package-name-${i} package-version${version?.replaceAll('.', '')}`,
+              hoverMessage: {
+                value: `${_import.name} is using version ${version}. \n\n Click to change package version.`,
               },
-            })
-          }
-
-          i++
+            },
+          })
         }
+
+        i++
       }
     }
   }
@@ -103,7 +145,7 @@ async function doDecorations(editor: Editor.IStandaloneCodeEditor) {
 }
 
 export const PackagesDecoration: EditorPlugin = {
-  language: 'javascript',
+  language: 'typescript',
   init(editor) {
     const pacakges = usePackages()
 

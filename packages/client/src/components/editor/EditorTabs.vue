@@ -31,7 +31,7 @@ const addFile = (name: string) => {
 
     if (name.endsWith('.vue'))
       filesystem.createFile(new SFCFile({ filename: name }))
-    else if (name.endsWith('.js'))
+    else if (name.endsWith('.js') || name.endsWith('.ts'))
       filesystem.createFile(new ScriptFile({ filename: name }))
     else if (name.endsWith('.json'))
       filesystem.createFile(new JsonFile({ filename: name }))
@@ -72,7 +72,7 @@ onClickOutside(target, () => {
       item-key="filename"
     >
       <template #header>
-        <EditorTab class="rounded-tl" no-icon name="main.js" :is-protected="true">
+        <EditorTab class="rounded-tl" no-icon name="main.ts" :is-protected="true">
           <carbon-application />
         </EditorTab>
       </template>

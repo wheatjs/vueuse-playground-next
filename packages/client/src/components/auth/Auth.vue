@@ -2,12 +2,7 @@
 import { useAuth } from '~/store'
 
 const auth = useAuth()
-const showSignIn = computed(() => {
-  if (auth.user && !auth.user.isAnonymous)
-    return false
-
-  return true
-})
+const showSignIn = computed(() => !(auth.user && !auth.user.isAnonymous))
 </script>
 
 <template>

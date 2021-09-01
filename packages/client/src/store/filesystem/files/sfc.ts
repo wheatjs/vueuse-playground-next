@@ -29,7 +29,7 @@ export class SFCFile extends BaseFile {
     })
     this.script = new Document(`${this.filename}:script`, {
       onUpdate: () => this.onUpdate(),
-      language: 'javascript',
+      language: 'typescript',
       initialContent: options.initialScriptContent,
     })
     this.style = new Document(`${this.filename}:style`, {
@@ -59,7 +59,7 @@ export class SFCFile extends BaseFile {
 
   public override toString() {
     return `
-      <script setup>${this.script.text}</script>
+      <script setup lang="ts">${this.script.text}</script>
       <template>${this.template.text}</template>
       <style>${this.style.text}</style>
     `

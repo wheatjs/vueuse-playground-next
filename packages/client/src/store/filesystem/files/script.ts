@@ -14,9 +14,13 @@ export class ScriptFile extends BaseFile {
 
     this.script = new Document(`${this.filename}:script`, {
       onUpdate: () => this.onUpdate(),
-      language: 'javascript',
+      language: 'typescript',
       initialContent: options.initialScriptContent,
     })
+  }
+
+  public compiled = {
+    js: '',
   }
 
   public override get documents() {
@@ -35,9 +39,9 @@ export class ScriptFile extends BaseFile {
     return this.script.text
   }
 
-  public get compiled() {
-    return {
-      js: this.script.text,
-    }
-  }
+  // public get compiled() {
+  //   return {
+  //     js: this.script.text,
+  //   }
+  // }
 }

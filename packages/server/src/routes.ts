@@ -28,11 +28,15 @@ export async function registerRoutes(server: Express) {
 
   server.post('/create', async(request, reply) => {
     const data = request.body
-    const auth = request.headers.authorization
+    const authToken = request.headers.authorization
 
-    if (auth) {
-      const a = await firebase.authorize(auth)
-      console.log(data, auth, a)
+    /**
+     * When saving a playgroud, if the playground id is provided
+     */
+    if (typeof authToken !== 'undefined' && await firebase.authorize(authToken)) {
+      return reply.send({
+        message: 'Authed :)',
+      })
     }
 
     return reply.send({

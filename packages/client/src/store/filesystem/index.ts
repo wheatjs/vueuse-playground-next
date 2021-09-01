@@ -19,7 +19,7 @@ export interface FSFile {
   content: string
   compiled: any
 }
-export const SUPPORTED_EXTENSIONS = ['vue', 'css', 'json', 'js']
+export const SUPPORTED_EXTENSIONS = ['vue', 'css', 'json', 'js', 'ts']
 
 const shouldUpdatePreviewHook = createEventHook<void>()
 const onFileCreatedHook = createEventHook<string>()
@@ -62,8 +62,8 @@ export const fs = reactive<FS>({
  */
 class Filesystem {
   public files: Record<string, BaseFile | ScriptFile | SFCFile | CssFile | JsonFile> = {
-    'main.js': new ScriptFile({
-      filename: 'main.js',
+    'main.ts': new ScriptFile({
+      filename: 'main.ts',
       isProtected: true,
       hide: true,
       onUpdate: filename => this.onUpdate(filename),
@@ -105,15 +105,20 @@ class Filesystem {
     if (filename) {
       const file = this.files[filename]
 
-      if (file instanceof SFCFile)
-        compileFile(file)
+      // if (file instanceof SFCFile)
+      await compileFile(file)
 
       setTimeout(() => shouldUpdatePreviewHook.trigger(), 0)
     }
     else {
-      Object.values(this.files)
-        .filter((f): f is SFCFile => f instanceof SFCFile)
-        .forEach(f => compileFile(f))
+      for (const file of Object.values(this.files)) {
+        if (file instanceof SFCFile)
+          await compileFile(file)
+      }
+
+      // Object.values(this.files)
+      //   .filter((f): f is SFCFile => f instanceof SFCFile)
+      //   .forEach(f => compileFile(f))
     }
 
     fs.currentFilename = this.currentFilename
