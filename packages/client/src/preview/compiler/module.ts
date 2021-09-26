@@ -3,11 +3,15 @@ import {
   MagicString,
   walk,
   walkIdentifiers,
+  extractIdentifiers,
+  isInDestructureAssignment,
+  isStaticProperty,
 } from '@vue/compiler-sfc'
 import { babelParserDefaultPlugins } from '@vue/shared'
-import { ExportSpecifier, Identifier, Node, ObjectProperty } from '@babel/types'
+
+import { ExportSpecifier, Identifier, Node } from '@babel/types'
 import { filesystem } from '~/store'
-import { SFCFile, BaseFile } from '~/store/filesystem/files'
+import { SFCFile } from '~/store/filesystem/files'
 
 const MAIN_FILE = 'App.vue'
 
@@ -33,11 +37,7 @@ const exportKey = '__export__'
 const dynamicImportKey = '__dynamic_import__'
 const moduleKey = '__module__'
 
-const isStaticProperty = (node: Node): node is ObjectProperty =>
-  node.type === 'ObjectProperty' && !node.computed
-
-// similar logic with Vite's SSR transform, except this is targeting the browser
-function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
+function processFile(file: SFCFile, seen = new Set<File>()) {
   if (seen.has(file))
     return []
 
@@ -123,7 +123,7 @@ function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
       if (node.declaration) {
         if (
           node.declaration.type === 'FunctionDeclaration'
-          || node.declaration.type === 'ClassDeclaration'
+            || node.declaration.type === 'ClassDeclaration'
         ) {
           // export function foo() {}
           defineExport(node.declaration.id!.name)
@@ -131,9 +131,8 @@ function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
         else if (node.declaration.type === 'VariableDeclaration') {
           // export const foo = 1, bar = 2
           for (const decl of node.declaration.declarations) {
-            const names = extractNames(decl.id as any)
-            for (const name of names)
-              defineExport(name)
+            for (const id of extractIdentifiers(decl.id))
+              defineExport(id.name)
           }
         }
         s.remove(node.start!, node.declaration.start!)
@@ -161,18 +160,30 @@ function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
     }
 
     // default export
-    if (node.type === 'ExportDefaultDeclaration')
-      s.overwrite(node.start!, node.start! + 14, `${moduleKey}.default =`)
+    if (node.type === 'ExportDefaultDeclaration') {
+      if ('id' in node.declaration && node.declaration.id) {
+        // named hoistable/class exports
+        // export default function foo() {}
+        // export default class A {}
+        const { name } = node.declaration.id
+        s.remove(node.start!, node.start! + 15)
+        s.append(`\n${exportKey}(${moduleKey}, "default", () => ${name})`)
+      }
+      else {
+        // anonymous default exports
+        s.overwrite(node.start!, node.start! + 14, `${moduleKey}.default =`)
+      }
+    }
 
     // export * from './foo'
     if (node.type === 'ExportAllDeclaration') {
       const importId = defineImport(node, node.source.value)
       s.remove(node.start!, node.end!)
       s.append(`\nfor (const key in ${importId}) {
-        if (key !== 'default') {
-          ${exportKey}(${moduleKey}, key, () => ${importId}[key])
-        }
-      }`)
+          if (key !== 'default') {
+            ${exportKey}(${moduleKey}, key, () => ${importId}[key])
+          }
+        }`)
     }
   }
 
@@ -190,13 +201,13 @@ function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
         // skip for destructure patterns
         if (
           !(parent as any).inPattern
-          || isInDestructureAssignment(parent, parentStack)
+            || isInDestructureAssignment(parent, parentStack)
         )
           s.appendLeft(id.end!, `: ${binding}`)
       }
       else if (
         parent.type === 'ClassDeclaration'
-        && id === parent.superClass
+          && id === parent.superClass
       ) {
         if (!declaredConst.has(id.name)) {
           declaredConst.add(id.name)
@@ -235,74 +246,9 @@ function processFile(file: SFCFile, seen = new Set<BaseFile>()) {
   const processed = [s.toString()]
   if (importedFiles.size) {
     for (const imported of importedFiles)
-      processed.push(...processFile(filesystem.files[imported] as SFCFile, seen))
+      processed.push(...processFile(filesystem.files[imported], seen))
   }
 
   // return a list of files to further process
   return processed
-}
-
-function extractNames(param: Node): string[] {
-  return extractIdentifiers(param).map(id => id.name)
-}
-
-function extractIdentifiers(
-  param: Node,
-  nodes: Identifier[] = [],
-): Identifier[] {
-  switch (param.type) {
-    case 'Identifier':
-      nodes.push(param)
-      break
-
-    case 'MemberExpression':
-      let object: any = param // eslint-disable-line no-case-declarations
-      while (object.type === 'MemberExpression')
-        object = object.object
-
-      nodes.push(object)
-      break
-
-    case 'ObjectPattern':
-      param.properties.forEach((prop) => {
-        if (prop.type === 'RestElement')
-          extractIdentifiers(prop.argument, nodes)
-        else
-          extractIdentifiers(prop.value, nodes)
-      })
-      break
-
-    case 'ArrayPattern':
-      param.elements.forEach((element) => {
-        if (element) extractIdentifiers(element, nodes)
-      })
-      break
-
-    case 'RestElement':
-      extractIdentifiers(param.argument, nodes)
-      break
-
-    case 'AssignmentPattern':
-      extractIdentifiers(param.left, nodes)
-      break
-  }
-
-  return nodes
-}
-
-function isInDestructureAssignment(parent: Node, parentStack: Node[]): boolean {
-  if (
-    parent
-    && (parent.type === 'ObjectProperty' || parent.type === 'ArrayPattern')
-  ) {
-    let i = parentStack.length
-    while (i--) {
-      const p = parentStack[i]
-      if (p.type === 'AssignmentExpression')
-        return true
-      else if (p.type !== 'ObjectProperty' && !p.type.endsWith('Pattern'))
-        break
-    }
-  }
-  return false
 }

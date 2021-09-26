@@ -22,6 +22,7 @@ const defaultVueUrl = import.meta.env.PROD
 export const vueRuntimeUrl = ref(defaultVueUrl)
 
 async function transformTS(src: string) {
+  console.log('Parsing', src)
   return transform(src, {
     transforms: ['typescript'],
   }).code
@@ -50,6 +51,8 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
     fs.errors = []
     return
   }
+
+  console.log(content)
 
   if (!filename.endsWith('.vue')) {
     if (shouldTransformRef(content))
@@ -102,19 +105,21 @@ export async function compileFile({ filename, compiled, content }: SFCFile) {
   const [clientScript, bindings] = clientScriptResult
   clientCode += clientScript
 
+  console.log(`Code for ${filename}`, clientCode)
+
   // script ssr only needs to be performed if using <script setup> where
   // the render fn is inlined.
-  if (descriptor.scriptSetup) {
-    const ssrScriptResult = await doCompileScript(descriptor, id, true)
-    if (!ssrScriptResult)
-      return
+  // if (descriptor.scriptSetup) {
+  //   const ssrScriptResult = await doCompileScript(descriptor, id, true)
+  //   if (!ssrScriptResult)
+  //     return
 
-    ssrCode += ssrScriptResult[0]
-  }
-  else {
-    // when no <script setup> is used, the script result will be identical.
-    ssrCode += clientScript
-  }
+  //   ssrCode += ssrScriptResult[0]
+  // }
+  // else {
+  //   // when no <script setup> is used, the script result will be identical.
+  //   ssrCode += clientScript
+  // }
 
   // template
   // only need dedicated compilation if not using <script setup>
@@ -203,7 +208,6 @@ async function doCompileScript(
     try {
       const compiledScript = SFCCompiler.compileScript(descriptor, {
         id,
-        refSugar: true,
         refTransform: true,
         inlineTemplate: true,
         templateOptions: {
@@ -211,6 +215,8 @@ async function doCompileScript(
           ssrCssVars: descriptor.cssVars,
         },
       })
+
+      console.log('Compiled Script', descriptor.scriptSetup, compiledScript)
       let code = ''
       if (compiledScript.bindings) {
         code += `\n/* Analyzed bindings: ${JSON.stringify(
@@ -229,7 +235,8 @@ async function doCompileScript(
       return [code, compiledScript.bindings]
     }
     catch (e) {
-      // store.errors = [e]
+      if (e instanceof Error && e.stack)
+        fs.errors = [e.stack.split('\n').slice(0, 12).join('\n')]
     }
   }
   else {

@@ -76,7 +76,6 @@ const enabled = computed(() => preview.size === 'Default')
         </template>
         <div overflow="auto" w="full" h="full">
           <PreviewOutput />
-          <pre>{{ fs }}</pre>
         </div>
       </Container>
     </Pane>

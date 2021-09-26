@@ -57,10 +57,10 @@ html.dark {
   @apply !rounded-b;
 }
 
-.editor-packages-install {
+/* .editor-packages-install {
   width: 0.8em;
   height: 0.8em;
-  content: '';
+  content: 'Install';
   display: inline-block;
   margin: 0.1em 0.2em 0;
   border-radius: 0.125em;
@@ -68,6 +68,30 @@ html.dark {
   color: white;
   background: url('~/assets/CarbonPackage.svg') no-repeat center center;
   background-size: 1em;
+} */
+
+.editor-packages-install {
+  padding-left: 0.25em;
+}
+
+.editor-packages-install::after {
+  content: 'Install';
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+  line-height: 1.2em;
+  @apply cursor-pointer rounded text-dark-50 bg-dark-50 bg-opacity-15 font-bold;
+}
+
+.dark .editor-packages-install::after {
+  @apply text-light-900 text-opacity-45 bg-dark-100 bg-opacity-30  font-bold;
+}
+
+.editor-packages-install:hover::after {
+  @apply bg-green-400 bg-opacity-20 text-green-600;
+}
+
+.dark .editor-packages-install:hover::after {
+  @apply bg-green-400 bg-opacity-20 text-green-300;
 }
 
 .editor-packages-version {

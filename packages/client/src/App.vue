@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { useAuth } from '~/store'
+import { useAuth, usePackages } from '~/store'
 
 const auth = useAuth()
+const packages = usePackages()
+
 auth.init()
+packages.addPackage('@vueuse/core') // Well since this is the vueuse playground, we will install vueuse by default
 </script>
 
 <template>

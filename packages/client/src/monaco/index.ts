@@ -65,11 +65,12 @@ const setup = createSingletonPromise(async() => {
     importHelpers: true,
     noImplicitUseStrict: false,
     isolatedModules: true,
+    target: monaco.languages.typescript.ScriptTarget.ESNext,
   })
 
   monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
     // Ignore unused variable warnings
-    diagnosticCodesToIgnore: [6133, 6198, 8006],
+    diagnosticCodesToIgnore: [6133, 6198, 8006, 8010],
   })
 
   const [
@@ -117,7 +118,8 @@ const setup = createSingletonPromise(async() => {
         }
       })
 
-    const _files = fs.filenames
+    const _vueFiles = fs.filenames
+      .filter(filename => filename !== 'App.vue')
       .filter(filename => filename.endsWith('.vue'))
       .map((filename) => {
         return {
@@ -129,10 +131,20 @@ const setup = createSingletonPromise(async() => {
         }
       })
 
+    const _scriptFiles = fs.filenames
+      .filter(filename => filename !== 'main.ts')
+      .filter(filename => filename.endsWith('.ts') || filename.endsWith('.js'))
+      .map((filename) => {
+        return {
+          content: `declare module './${filename}' {}`,
+        }
+      })
+
     monaco.languages.typescript.typescriptDefaults.setExtraLibs([
       ...builtinLibs,
       ..._packages,
-      ..._files,
+      ..._vueFiles,
+      ..._scriptFiles,
     ])
   }, { immediate: true })
 

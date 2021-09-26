@@ -59,7 +59,7 @@ export class SFCFile extends BaseFile {
 
   public override toString() {
     return `
-      <script setup lang="ts">${this.script.text}</script>
+      <script setup lang="ts">\n${this.script.text}\n</script>
       <template>${this.template.text}</template>
       <style>${this.style.text}</style>
     `
