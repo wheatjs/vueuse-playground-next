@@ -49,7 +49,7 @@ const showSignIn = computed(() => !(auth.user && !auth.user.isAnonymous))
       </template>
     </DialogTitle>
     <div p="4" class="prose" text="dark:(light-900 opacity-70) center">
-      w o w - you signed in, so amazin
+      More settings coming here soon! Please check back later!
     </div>
     <DialogFooter>
       <template #extra>

@@ -7,7 +7,6 @@ import {
   isInDestructureAssignment,
   isStaticProperty,
 } from '@vue/compiler-sfc'
-import { babelParserDefaultPlugins } from '@vue/shared'
 
 import { ExportSpecifier, Identifier, Node } from '@babel/types'
 import { filesystem } from '~/store'
@@ -50,7 +49,7 @@ function processFile(file: SFCFile, seen = new Set<File>()) {
   const ast = babelParse(js, {
     sourceFilename: file.filename,
     sourceType: 'module',
-    plugins: [...babelParserDefaultPlugins],
+    plugins: [],
   }).program.body
 
   const idToImportMap = new Map<string, string>()

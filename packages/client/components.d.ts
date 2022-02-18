@@ -5,7 +5,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     Auth: typeof import('./src/components/auth/Auth.vue')['default']
     Button: typeof import('./src/components/ui/Button/Button.vue')['default']
-    BxBxPackage: typeof import('virtual:vite-icons/bx/bx-package')['default']
     CarbonAdd: typeof import('virtual:vite-icons/carbon/add')['default']
     CarbonApplication: typeof import('virtual:vite-icons/carbon/application')['default']
     CarbonCheckmark: typeof import('virtual:vite-icons/carbon/checkmark')['default']
